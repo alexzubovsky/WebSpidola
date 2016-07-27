@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="pref_description_callmonitoring">Pause on incomming or outcomming call and resume on call end</string>
+    <string name="pref_title_monitoring">Pause on calls</string>
+</resources>

@@ -1,0 +1,115 @@
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="app_name">Web Spidola</string>
+    <string name="action_settings">Settings</string>
+    <string name="action_exit">Exit</string>
+    <string name="action_add">Add Station</string>
+    <string name="action_info">Info</string>
+    <string name="title_activity_notification_area">NotificationAreaActivity</string>
+
+    <string name="enable_background_audio">Play in background</string>
+
+
+    <string name="video">Video</string>
+
+
+    <string name="audio">Audio</string>
+
+
+    <string name="text">Text</string>
+
+
+    <string name="logging">Logging</string>
+
+
+    <string name="logging_normal">Normal</string>
+    <string name="logging_verbose">Verbose</string>
+
+
+    <string name="retry">Retry</string>
+
+
+    <string name="off">[off]</string>
+    <string name="error_drm_not_supported">Protected content not supported on API levels below 18</string>
+    <string name="error_drm_unsupported_scheme">This device does not support the required DRM scheme</string>
+
+
+    <string name="error_drm_unknown">An unknown DRM error occurred</string>
+    <string name="error_no_decoder">This device does not provide a decoder for <xliff:g id="mime_type">%1$s</xliff:g></string>
+    <string name="error_no_secure_decoder">This device does not provide a secure decoder for <xliff:g id="mime_type">%1$s</xliff:g></string>
+
+
+    <string name="error_querying_decoders">Unable to query device decoders</string>
+    <string name="error_instantiating_decoder">Unable to instantiate decoder <xliff:g id="decoder_name">%1$s</xliff:g></string>
+    <string name="storage_permission_denied">Permission to access storage was denied</string>
+    <string name="TAG_URI">TAG_URI</string>
+    <string name="TAG_TYPE">TAG_TYPE</string>
+    <string name="network_not_available">Network State is not available</string>
+    <string name="exo_player_name">ExoPlayerDemo</string>
+    <string name="title_activity_settings">Settings</string>
+
+    <!-- Strings related to Settings -->
+
+    <!-- Example General settings -->
+    <string name="pref_header_general">Automation</string>
+
+    <string name="pref_title_headphone_monitoring">Headphones monitoring</string>
+    <string name="pref_description_headphone_monitoring">If enabled then playing will be paused when headphones disconnected
+        and then resumed when headphones connected back
+    </string>
+    <string name="pref_title_bluetooth_monitoring">Bluetooth monitoring</string>
+    <string name="pref_description_bluetooth_monitoring">If enabled then playing will be paused when headphones disconnected
+        and thene resumed when bluetooth connected back
+    </string>
+    <string name="pref_title_autoplay">Auto play on loading</string>
+    <string name="pref_description_autoplay">If enabled and previously used station available then playing will be automatically start</string>
+
+    <string name="pref_title_display_name">Display name</string>
+    <string name="pref_default_display_name">John Smith</string>
+
+    <string name="pref_title_add_friends_to_messages">Theme</string>
+    <string-array name="pref_themes_list_titles">
+        <item>Dark</item>
+        <item>Medium Dark</item>
+        <item>Light</item>
+    </string-array>
+    <string-array name="pref_themes_list_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+
+    <!-- Example settings for Data & Sync -->
+    <string name="pref_header_data_sync">Data &amp; sync</string>
+
+    <string name="pref_title_sync_frequency">Sync frequency</string>
+    <string-array name="pref_sync_frequency_titles">
+        <item>15 minutes</item>
+        <item>30 minutes</item>
+        <item>1 hour</item>
+        <item>3 hours</item>
+        <item>6 hours</item>
+        <item>Never</item>
+    </string-array>
+    <string-array name="pref_sync_frequency_values">
+        <item>15</item>
+        <item>30</item>
+        <item>60</item>
+        <item>180</item>
+        <item>360</item>
+        <item>-1</item>
+    </string-array>
+
+    <string name="pref_title_system_sync_settings">System sync settings</string>
+
+    <!-- Example settings for Notifications -->
+    <string name="pref_header_themes">Notifications</string>
+
+    <string name="pref_title_new_message_notifications">New message notifications</string>
+
+    <string name="pref_title_ringtone">Ringtone</string>
+    <string name="pref_ringtone_silent">Silent</string>
+
+    <string name="pref_title_vibrate">Vibrate</string>
+    <string name="pref_description_callmonitoring">Pause on incomming or outcomming call and resume on call end</string>
+    <string name="pref_title_monitoring">Pause on calls</string>
+</resources>
