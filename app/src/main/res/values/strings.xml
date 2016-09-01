@@ -1,5 +1,4 @@
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-    <string name="app_name">Web Spidola</string>
     <string name="action_settings">Settings</string>
     <string name="action_exit">Exit</string>
     <string name="action_add">Add Station</string>
@@ -79,7 +78,7 @@
     </string-array>
 
     <!-- Example settings for Data & Sync -->
-    <string name="pref_header_data_sync">Data &amp; sync</string>
+    <string name="pref_header_recording">Recording settings</string>
 
     <string name="pref_title_sync_frequency">Sync frequency</string>
     <string-array name="pref_sync_frequency_titles">
@@ -96,13 +95,63 @@
         <item>60</item>
         <item>180</item>
         <item>360</item>
-        <item>-1</item>
+        <item name="default">-1</item>
+    </string-array>
+    <string-array name="banned_anchors_labels">
+        <item>terms of use</item>
+        <item>privacy</item>
+        <item>help</item>
+        <item>contact us</item>
+        <item>contacts</item>
+        <item>contact</item>
+        <item>suggest a station</item>
+        <item>index.html</item><!--About-->
+        <item>index.html#</item><!--About-->
+        <item>about/index.html</item><!--Overview-->
+        <item>about/our-services.html</item><!--Our Services-->
+        <item>about/team.html</item><!--Team Products-->
+        <item>products/networked-audio.html</item><!--Networked Audio-->
+        <item>products/smart-tv-and-home-video.html</item><!--Smart TV and Home Video-->
+        <item>products/mobile-and-tablet.html</item><!--Mobile and Tablet-->
+        <item>products/automotive.html</item><!--Automotive-->
+        <item>products/pc-and-cloud-music.html</item><!--PC and Cloud Music-->
+        <item>products/game-consoles.html</item><!--Game Consoles-->
+        <item>partners/index.html</item><!--Partners-->
+        <item>contact/index.html</item><!--Contact-->
+        <!--item>guide/asp/BrowseStations/startpage.asp</item--><!--Check out our huge station list!-->
+        <item>about/our-services.html</item><!--Tell me more-->
+        <item>products/networked-audio.html</item><!--Networked \nAudio-->
+        <item>products/smart-tv-and-home-video.html</item><!--Smart TV and \nHome Video-->
+        <item>products/mobile-and-tablet.html</item><!--Mobile and \nTablet-->
+        <item>products/automotive.html</item><!--Automotive-->
+        <item>products/pc-and-cloud-music.html</item><!--PC and Cloud \nMusic-->
+        <item>products/game-consoles.html</item><!--Game Consoles-->
+        <item>contact/index.html</item><!-- contact us-->
+        <item>index.html</item><!-- • Overview-->
+        <item>about/our-services.html</item><!-- Our services-->
+        <item>about/team.html</item><!-- • Team-->
+        <item>products/networked-audio.html</item><!-- • Networked Audio-->
+        <item>products/smart-tv-and-home-video.html</item><!-- • Smart TV & Home Video-->
+        <item>products/mobile-and-tablet.html</item><!-- • Mobile and Tablet-->
+        <item>products/automotive.html</item><!-- • Automotive-->
+        <item>products/pc-and-cloud-music.html</item><!-- • PC and Cloud Music-->
+        <item>products/game-consoles.html</item><!-- • Game Consoles-->
+        <item>partners/index.html</item><!-- Partners-->
+        <item>contact/index.html</item><!-- Contact-->
+        <item>privacy-policy.html</item><!-- Privacy Policy-->
+        <item>terms-of-use.html</item><!-- Terms of Use   -->
+        <item>index.asp</item><!-- About vTuner-->
+        <item>services.asp</item><!-- Our Services-->
+        <item>features.asp </item><!--Featured Products-->
+        <item>partners.asp</item><!-- Partners-->
+        <item>team.asp</item><!-- Team-->
+        <item>contact.asp</item><!-- Contact-->
     </string-array>
 
     <string name="pref_title_system_sync_settings">System sync settings</string>
 
     <!-- Example settings for Notifications -->
-    <string name="pref_header_themes">Notifications</string>
+    <string name="pref_header_themes">Look and Feel</string>
 
     <string name="pref_title_new_message_notifications">New message notifications</string>
 
@@ -112,4 +161,70 @@
     <string name="pref_title_vibrate">Vibrate</string>
     <string name="pref_description_callmonitoring">Pause on incomming or outcomming call and resume on call end</string>
     <string name="pref_title_monitoring">Pause on calls</string>
+    <string name="title_font_size">Font Size</string>
+    <string name="title_font_size_for_search">Font Size in Search page</string>
+    <string name="headphone_switch">headphone_switch</string>
+    <string name="bluetooth_switch">bluetooth_switch</string>
+    <string name="autoplay_switch">autoplay_switch</string>
+    <string name="phonecall_switch">call_switch</string>
+    <string name="font_size_value">font_size</string>
+    <string name="font_size_for_search_value">font_size_for_search</string>
+    <string name="space_size_value">space_size</string>
+    <string name="themes_list">themes_list</string>
+    <string name="title_padding_space">Space Between Stations</string>
+    <string name="application_name">Web Spidola</string>
+    <string name="max_file_size">max_file_size</string>
+    <string name="max_file_size_title">Maximum recording size (MB)</string>
+
+    <string name="title_activity_activity_vtuner">Search and add Station</string>
+    <string name="add_stations_button">Add Stations</string>
+    <string name="adding_content">Search and Adding Stations</string>
+    <string name="title_activity_edit_stations_list">Edit Stations List</string>
+    <string name="search_stations_url">http://www.vtuner.com/setupapp/guide/asp/BrowseStations/Searchform.asp?sSearchInput=</string>
+    <string name="js_get_anchors"><![CDATA[
+var a=document.getElementsByTagName(\'A\');var s=[];if(a!=null)for(var i=0;a.length>i;i++)
+s.push(a[i].innerText+\'=\'+a[i].href);s.join(\'_|_|_\')
+    ]]></string>
+    <string name="js_get_outerhtml"><![CDATA[
+var s=document.documentElement.outerHTML;if(s.indexOf(\'viewport\')>=0)window.history.back();else \'no \'+s
+    ]]></string>
+    <string name="test"><![CDATA[
+res= \'[\'+s1.join(\',\') + \']_|_|_[\' + s2.join(\',\')+\']\';
+    ]]></string>
+    <string name="js_get_anchors_struct"><![CDATA[
+var s1 = [], s2 = [], s, a, i, parent, res=\'parent\',delim0=\'__aaa__aaa__\';delim1=\'__bbb__bbb__"\';delim2=\'__ccc__ccc__\',anch = document.getElementsByTagName(\'A\');
+for (i = 0; anch.length > i; i++){
+parent = (a = anch[i]).parentElement.parentElement; s = a.href+ delim0 +  a.innerText;
+if (a.href.indexOf(\'link=1&id=\') > 0){
+    if (parent.children.length == 5)
+        s1.push(s+ delim0 + parent.children[4].innerText + delim0 + parent.children[2].innerText + delim0 + parent.children[3].innerText);
+}else s2.push(s);
+}
+res=(s1.join(delim1) + delim2 + s2.join(delim1))
+]]></string>
+    <string name="audiolevel_switch">audiolevel_on_headphones</string>
+    <string name="audiolevel_summary">Restore audio level when reconnecting headphones while playing</string>
+    <string name="audiolevel_title">Restore level on headphones</string>
+    <string name="manage_stations_title">Manage Stations</string>
+    <string name="delete_station_button">Delete it</string>
+    <string name="keep_sation_button">Let it be</string>
+    <string name="add_station_button">Let it be Added</string>
+    <string name="not_add_station_button">Do not add it</string>
+    <string name="add_station_button_1">Add anyway</string>
+    <string name="not_add_station_button_1">Do not add</string>
+    <string name="duplicate_station_button">Duplicate Station</string>
+    <string name="inaccessible_station_text">Would you like to delete inaccessible station with the label\n\'%s\'</string>
+    <string name="manage_station_text">Would you like to not add station with the label\n\'%s\'</string>
+    <string name="duplicate_station_text">Chosen station already is in the list with the label\n\'%s\'</string>
+    <string name="selected_station_def">SelectedStation</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="root_directory_for_recordings">ROOT_DIRECTORY_FOR_RECORDINGS</string>
+    <string name="records_sort_ascending">RECORDS_SORT_ASCENDING</string>
+    <string name="sort_ascending">Sort Ascending</string>
+    <string name="shortening_names">Shortening Names</string>
+    <string name="records_shorting_names">RECORDS_SHORTING_NAMES</string>
+    <!--string name="title_activity_main_tabbed">MainTabbedActivity</string-->
+    <!--string name="section_format">Hello World from section: %1$d</string-->
 </resources>

@@ -1,11 +1,38 @@
 <resources>
 
+    <style name="DarkTheme" parent="DarkTheme">
+        <item name="windowActionBar">false</item>
+        <item name="colorPrimary">#00438a</item>
+        <item name="colorPrimaryDark">#011149</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="colorForText">@color/colorAccent</item>
+        <item name="colorForBackground">@color/colorPrimaryDark</item>
+
+    </style>
+
+    <style name="MediumTheme" parent="MediumTheme">
+        <item name="windowActionBar">false</item>
+        <item name="colorPrimary">#0081bd</item>
+        <item name="colorPrimaryDark">#026c93</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="colorForText">@color/colorAccent</item>
+        <item name="colorForBackground">@color/colorPrimaryDark</item>
+    </style>
+
+    <style name="LightTheme" parent="LightTheme">
+        <item name="windowActionBar">false</item>
+        <item name="colorPrimary">#8fa9d3</item>
+        <item name="colorPrimaryDark">#2c5672</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="colorForText">@color/common_google_signin_btn_text_dark</item>
+        <item name="colorForBackground">@color/black_overlay</item>
+    </style>
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
         <!-- Customize your theme here. -->
-        <item name="colorPrimary">@color/colorPrimary</item>
+        <!--item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="colorAccent">@color/colorAccent</item>
+        <item name="colorAccent">@color/colorAccent</item-->
     </style>
 
     <style name="AppTheme.NoActionBar">
@@ -17,13 +44,6 @@
 
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light"/>
 
-    <style name="AppTheme.Station">
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_width">fill_parent</item>
-        <item name="android:background">@color/colorPrimary</item>
-        <item name="android:textColor">@color/colorText</item>
-        <item name="android:textSize">64sp</item>
-    </style>
 
     <style name="Divider">
         <item name="android:layout_width">match_parent</item>
@@ -31,22 +51,62 @@
         <item name="android:background">?android:attr/listDivider</item>
     </style>
 
-<style name="RootTheme" parent="android:Theme.Holo">
+    <style name="RootTheme" parent="android:Theme.Holo">
+    </style>
 
-</style>
-<style name="PlayerTheme" parent="@style/RootTheme">
-	<item name="android:windowNoTitle">true</item>
-	<item name="android:windowBackground">@android:color/black</item>
+    <style name="PlayerTheme" parent="@style/RootTheme">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowBackground">@android:color/black</item>
+    </style>
 
-</style>
+    <style name="DemoButton">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:minWidth">40dp</item>
+    </style>
 
+    <style name="AppTheme.Station" parent="AppTheme.AllFrames">
+        <item name="android:layout_height">wrap_content</item>
+        <!--item name="android:background">?colorForBackground</item>
+        <item name="android:textColor">?colorForText</item-->
+        <item name="android:textSize">16sp</item>
+    </style>
 
-<style name="DemoButton">
-	<item name="android:layout_width">wrap_content</item>
+    <style name="AppTheme.AllFrames">
+        <!--item name="android:background">@color/colorPrimary</item>
+        <item name="android:textColor">@color/colorText</item-->
+        <item name="android:background">?colorForBackground</item>
+        <item name="android:textColor">?colorForText</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:gravity">top|left</item>
+    </style>
+    <style name="AppTheme.AddStation" parent="AppTheme.AllFrames">
+        <item name="android:padding">1dp</item>
+        <item name="android:layout_margin">1dp</item>
+        <!--item name="android:background">?colorForBackground</item>
+        <item name="android:textColor">?colorForText</item-->
+    </style>
 
-	<item name="android:layout_height">wrap_content</item>
+    <style name="RadioButtonControls" parent="AppTheme.AllFrames">
+        <item name="android:layout_width">36dp</item>
+        <item name="android:layout_height">36dp</item>
+        <item name="android:layout_marginTop">0dp</item>
+        <item name="android:layout_marginBottom">0dp</item>
+        <item name="android:layout_marginLeft">8dp</item>
+        <!--item name="android:background">@color/colorPrimary</item-->
+    </style>
 
-	<item name="android:minWidth">40dp</item>
+    <style name="FullscreenTheme" parent="AppTheme">
+        <item name="android:actionBarStyle">@style/FullscreenActionBarStyle</item>
+        <item name="android:windowActionBarOverlay">true</item>
+        <item name="android:windowBackground">@null</item>
+        <item name="metaButtonBarStyle">?android:attr/buttonBarStyle</item>
+        <item name="metaButtonBarButtonStyle">?android:attr/buttonBarButtonStyle</item>
+    </style>
 
-</style>
+    <style name="FullscreenActionBarStyle" parent="Widget.AppCompat.ActionBar">
+        <item name="android:background">@color/black_overlay</item>
+    </style>
+
 </resources>

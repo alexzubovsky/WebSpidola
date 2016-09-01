@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:textStyle="bold"
+          android:textAllCaps="true"
+          android:textColor="@android:color/white"
+          android:textSize="14sp"
+          android:paddingStart="8dp"
+          android:paddingLeft="8dp"
+          android:paddingRight="0dp"
+          android:paddingEnd="0dp"
+          android:paddingTop="4dp"
+          android:paddingBottom="4dp"
+          android:background="#a6212170"/><!--
+          android:paddingStart="?android:attr/expandableListPreferredItemPaddingLeft"
+          android:paddingLeft="?android:attr/expandableListPreferredItemPaddingLeft"
+          android:paddingRight="8dp"
+          android:paddingEnd="8dp"
+          android:background="#339999FF"
+          -->

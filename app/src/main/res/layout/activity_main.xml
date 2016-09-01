@@ -3,36 +3,86 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main_content"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:context="com.example.android.webspidola.MainActivity"
-    android:background="@color/colorPrimary"
-    >
+    tools:context="com.zome.android.webspidola.MainTabbedActivity">
 
     <android.support.design.widget.AppBarLayout
+        android:id="@+id/appbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:theme="@style/AppTheme.AppBarOverlay">
+        android:paddingTop="2dp"
+        android:theme="@style/AppTheme.AppBarOverlay"><!--
+        android:paddingTop="@dimen/appbar_padding_top"-->
 
         <android.support.v7.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
+            android:layout_height="wrap_content"
             android:background="?attr/colorPrimary"
-            app:popupTheme="@style/AppTheme.PopupOverlay"/>
-
+            app:layout_scrollFlags="scroll|enterAlways"
+            app:popupTheme="@style/AppTheme.PopupOverlay"/><!-- ?attr/actionBarSize -->
+        <android.support.design.widget.TabLayout
+            app:layout_scrollFlags="scroll|enterAlways"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:overScrollMode="always"
+            android:scrollbars="horizontal"
+            android:id="@+id/tabContainer"
+            android:textAllCaps="false"
+            app:tabMode="scrollable"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior">
+            <android.support.design.widget.TabItem
+                android:layout_height="wrap_content"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:text="Tab 1"
+                android:textAllCaps="false"/>
+            <android.support.design.widget.TabItem
+                android:layout_height="wrap_content"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:text="Tab 2"
+                android:textAllCaps="false"/>
+            <android.support.design.widget.TabItem
+                android:layout_height="wrap_content"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:text="Tab 3"
+                android:textAllCaps="false"/>
+            <android.support.design.widget.TabItem
+                android:layout_height="wrap_content"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:text="Tab 4"
+                android:textAllCaps="false"/>
+        </android.support.design.widget.TabLayout>
     </android.support.design.widget.AppBarLayout>
 
-    <include layout="@layout/content_main"/>
+    <android.support.v4.view.ViewPager
+        android:id="@+id/container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
+        <!--blue shine at the "end" of ViewPage
+         android:overScrollMode="never"
+         -->
 
-    <android.support.design.widget.FloatingActionButton
+
+    <!--android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
+        android:layout_gravity="end|bottom"
         android:layout_margin="@dimen/fab_margin"
-        android:src="@drawable/ic_media_play"
-        android:tag="ic_media_play|ic_media_pause"/>
+        android:src="@android:drawable/ic_dialog_email"/-->
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fab_play_pause"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="@dimen/fab_margin"/>
 
 </android.support.design.widget.CoordinatorLayout>

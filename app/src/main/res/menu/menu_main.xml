@@ -1,7 +1,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
       xmlns:app="http://schemas.android.com/apk/res-auto"
       xmlns:tools="http://schemas.android.com/tools"
-      tools:context="com.example.android.webspidola.MainActivity">
+      tools:context=".FavoriteStationsFrame">
     <item
         android:id="@+id/action_info"
         android:orderInCategory="100"
@@ -13,10 +13,22 @@
         android:title="@string/action_settings"
         app:showAsAction="never"/>
     <item
-        android:id="@+id/action_add"
-        android:orderInCategory="200"
-        android:title="@string/action_add"
-        app:showAsAction="never"/>
+        android:id="@+id/sort_ascending"
+        android:orderInCategory="150"
+        android:title="@string/sort_ascending"
+        android:checkable="true"
+        android:checked="true"/>
+    <item
+        android:id="@+id/shortening_names"
+        android:orderInCategory="160"
+        android:title="@string/shortening_names"
+        android:checkable="true"
+        android:checked="true"/>
+    <!--item
+         android:id="@+id/action_edit"
+         android:orderInCategory="250"
+         android:title="@string/title_activity_edit_stations_list"
+         app:showAsAction="never"/-->
     <item
         android:id="@+id/action_exit"
         android:orderInCategory="300"

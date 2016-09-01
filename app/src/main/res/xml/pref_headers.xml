@@ -3,18 +3,18 @@
     <!-- These settings headers are only used on tablets. -->
 
     <header
-        android:fragment="com.example.android.webspidola.SettingsActivity$GeneralPreferenceFragment"
+        android:fragment="com.zome.android.webspidola.SettingsActivity$MonitoringPreferenceFragment"
         android:icon="@drawable/ic_info_black_24dp"
         android:title="@string/pref_header_general"/>
 
     <header
-        android:fragment="com.example.android.webspidola.SettingsActivity$ThemesPreferenceFragment"
+        android:fragment="com.zome.android.webspidola.SettingsActivity$LookAndFeelPreferenceFragment"
         android:icon="@drawable/ic_notifications_black_24dp"
         android:title="@string/pref_header_themes"/>
 
     <header
-        android:fragment="com.example.android.webspidola.SettingsActivity$DataSyncPreferenceFragment"
+        android:fragment="com.zome.android.webspidola.SettingsActivity$RecordingPreferenceFragment"
         android:icon="@drawable/ic_sync_black_24dp"
-        android:title="@string/pref_header_data_sync"/>
+        android:title="@string/pref_header_recording"/>
 
 </preference-headers>

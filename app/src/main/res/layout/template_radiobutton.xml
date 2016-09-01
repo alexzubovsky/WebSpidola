@@ -1,4 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RadioButton xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    style="@style/AppTheme.Station"/>
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:weightSum="1">
+    <RadioButton
+        style="@style/AppTheme.Station"
+        android:layout_width="0dp"
+        android:paddingTop="5dp"
+        android:layout_weight="1"/>
+    <ImageView style="@style/RadioButtonControls"
+        android:src="@drawable/ic_media_record"
+        android:visibility="gone"
+        android:tag="record"
+        android:layout_gravity="center"/>
+    <ImageView style="@style/RadioButtonControls"
+        android:src="@drawable/ic_media_pause"
+        android:visibility="gone"
+        android:tag="pause"
+        android:layout_gravity="center"/>
+    <ImageView style="@style/RadioButtonControls"
+        android:src="@drawable/ic_media_stop"
+        android:visibility="gone"
+        android:tag="stop"
+        android:layout_gravity="center"/>
+</LinearLayout>

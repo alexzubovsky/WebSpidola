@@ -1,53 +1,61 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest package="com.example.android.webspidola"
-          xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest package="com.zome.android.webspidola"
+          xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
 
     <!-- permission android:name="android.permission.MEDIA_CONTENT_CONTROL"/ -->
     <application
         android:allowBackup="true"
         android:icon="@drawable/icon"
-        android:label="@string/app_name"
+        android:label="@string/application_name"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
+        android:theme="@style/AppTheme"
+        tools:replace="android:label">
         <activity
-            android:name=".MainActivity"
-            android:configChanges="keyboardHidden"
-            android:label="@string/app_name"
+            android:name="com.zome.android.webspidola.MainTabbedActivity"
+            android:label="@string/application_name"
             android:theme="@style/AppTheme.NoActionBar">
-
-            <!-- android:configChanges="orientation|screenSize|keyboardHidden" -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
-
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <!--activity
+            android:name=".FavoriteStationsFrame"
+            android:configChanges="keyboardHidden"
+            android:label="@string/application_name"
+            android:theme="@style/AppTheme.NoActionBar">
+           <! - -intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter- ->
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.zome.android.webspidola.MainTabbedActivity"/>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity-->>
 
-        <receiver android:name=".RemoteControlReceiver">
+        <receiver android:name="com.zome.android.webspidola.RemoteControlReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_BUTTON"/>
             </intent-filter>
         </receiver>
 
         <service
-            android:name=".MediaPlayerService"
+            android:name="com.zome.android.webspidola.MediaPlayerService"
             android:exported="false">
             <receiver android:name=".BroadcastNotificationReceiver">
                 <intent-filter>
-
-                    <!--
-                    action android:name="media.player.service.action_play" >
-                    </action>
-                    <action android:name="media.player.service.action_pause" >
-                    </action
-                    -->
                     <action android:name="android.intent.action.ACTION_HEADSET_PLUG"/>
-
                     <category android:name="android.intent.category.DEFAULT"/>
                 </intent-filter>
             </receiver>
@@ -61,9 +69,45 @@
         </activity
         -->
         <activity
-            android:name=".SettingsActivity"
-            android:label="@string/title_activity_settings">
+            android:name="com.zome.android.webspidola.SettingsActivity"
+            android:label="@string/title_activity_settings"
+            android:parentActivityName="com.zome.android.webspidola.MainTabbedActivity">
+        <meta-data
+            android:name="android.support.PARENT_ACTIVITY"
+            android:value="com.zome.android.webspidola.MainTabbedActivity"/>
+
         </activity>
+        <!--activity
+            android:name=".SearchForStationsFrame"
+            android:configChanges="keyboardHidden|screenSize"
+            android:label="@string/title_activity_activity_vtuner"
+            android:parentActivityName=".MainTabbedActivity"
+            android:theme="@style/FullscreenTheme">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.zome.android.webspidola.MainTabbedActivity"/>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity-->
+        <!--
+ ATTENTION: This was auto-generated to add Google Play services to your project for
+     App Indexing.  See https://g.co/AppIndexing/AndroidStudio for more information.
+        -->
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version"/>
+
+        <!--activity
+            android:name=".ManageFavoriteStationsFrame"
+            android:label="@string/title_activity_edit_stations_list"
+            android:parentActivityName=".MainTabbedActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.zome.android.webspidola.MainTabbedActivity"/>
+        </activity-->
     </application>
 
 </manifest>

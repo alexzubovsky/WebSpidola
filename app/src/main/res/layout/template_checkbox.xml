@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+              android:paddingTop="5dp"
+    android:weightSum="1">
+    <CheckBox
+        style="@style/AppTheme.Station"
+        android:layout_width="0dp"
+        android:checked="true"
+        android:layout_weight="1"/>
+    <TextView style="@style/RadioButtonControls"
+              android:layout_height="wrap_content"
+              android:layout_width="wrap_content"
+        android:tag ="-1"
+        android:layout_gravity="center"
+        android:textSize="26sp"
+              android:text="▲"
+        android:paddingLeft="4dp"/>
+    <TextView style="@style/RadioButtonControls"
+              android:layout_height="wrap_content"
+              android:layout_width="wrap_content"
+        android:tag="1"
+        android:layout_gravity="center"
+              android:text="▼"
+        android:paddingRight="8dp"/>
+</LinearLayout>
