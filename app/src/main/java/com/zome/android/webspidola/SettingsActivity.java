@@ -1,4 +1,4 @@
-package com.example.android.webspidola;
+package com.zome.android.webspidola;
 
 
 import android.annotation.TargetApi;
@@ -13,10 +13,10 @@ import android.os.Bundle;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
-import android.support.v7.app.ActionBar;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.RingtonePreference;
+import android.support.v7.app.ActionBar;
 import android.text.TextUtils;
 import android.view.MenuItem;
 
@@ -133,7 +133,6 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 			actionBar.setDisplayHomeAsUpEnabled(true);
 		}
 	}
-
 	/**
 	 * {@inheritDoc}
 	 */
@@ -157,9 +156,9 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 	 */
 	protected boolean isValidFragment(String fragmentName) {
 		return PreferenceFragment.class.getName().equals(fragmentName)
-				|| GeneralPreferenceFragment.class.getName().equals(fragmentName)
-				|| DataSyncPreferenceFragment.class.getName().equals(fragmentName)
-				|| ThemesPreferenceFragment.class.getName().equals(fragmentName);
+				|| MonitoringPreferenceFragment.class.getName().equals(fragmentName)
+				|| LookAndFeelPreferenceFragment.class.getName().equals(fragmentName)
+				|| RecordingPreferenceFragment.class.getName().equals(fragmentName);
 	}
 
 	/**
@@ -167,26 +166,24 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 	 * activity is showing a two-pane settings UI.
 	 */
 	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
-	public static class GeneralPreferenceFragment extends PreferenceFragment {
+	public static class MonitoringPreferenceFragment extends PreferenceFragment {
 		@Override
 		public void onCreate(Bundle savedInstanceState) {
 			super.onCreate(savedInstanceState);
-			addPreferencesFromResource(R.xml.pref_general);
+			addPreferencesFromResource(R.xml.pref_monitoringl);
 			setHasOptionsMenu(true);
 
 			// Bind the summaries of EditText/List/Dialog/Ringtone preferences
 			// to their values. When their values change, their summaries are
 			// updated to reflect the new value, per the Android Design
 			// guidelines.
-			//bindPreferenceSummaryToValue(findPreference("example_text"));
-			bindPreferenceSummaryToValue(findPreference("themes_list"));
 		}
 
 		@Override
 		public boolean onOptionsItemSelected(MenuItem item) {
 			int id = item.getItemId();
 			if (id == android.R.id.home) {
-				startActivity(new Intent(getActivity(), SettingsActivity.class));
+				startActivity(new Intent(getActivity(), MainTabbedActivity.class));
 				return true;
 			}
 			return super.onOptionsItemSelected(item);
@@ -198,18 +195,19 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 	 * activity is showing a two-pane settings UI.
 	 */
 	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
-	public static class ThemesPreferenceFragment extends PreferenceFragment {
+	public static class RecordingPreferenceFragment extends PreferenceFragment {
 		@Override
 		public void onCreate(Bundle savedInstanceState) {
 			super.onCreate(savedInstanceState);
-			addPreferencesFromResource(R.xml.pref_notification);
+			addPreferencesFromResource(R.xml.pref_recording);
 			setHasOptionsMenu(true);
 
 			// Bind the summaries of EditText/List/Dialog/Ringtone preferences
 			// to their values. When their values change, their summaries are
 			// updated to reflect the new value, per the Android Design
 			// guidelines.
-			bindPreferenceSummaryToValue(findPreference("notifications_new_message_ringtone"));
+			//bindPreferenceSummaryToValue(findPreference("notifications_new_message_ringtone"));
+			bindPreferenceSummaryToValue(findPreference(getString(R.string.max_file_size)));
 		}
 
 		@Override
@@ -228,28 +226,32 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 	 * activity is showing a two-pane settings UI.
 	 */
 	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
-	public static class DataSyncPreferenceFragment extends PreferenceFragment {
+	public static class LookAndFeelPreferenceFragment extends PreferenceFragment {
 		@Override
 		public void onCreate(Bundle savedInstanceState) {
 			super.onCreate(savedInstanceState);
-			addPreferencesFromResource(R.xml.pref_data_sync);
+			addPreferencesFromResource(R.xml.pref_look);
 			setHasOptionsMenu(true);
 
 			// Bind the summaries of EditText/List/Dialog/Ringtone preferences
 			// to their values. When their values change, their summaries are
 			// updated to reflect the new value, per the Android Design
 			// guidelines.
-			bindPreferenceSummaryToValue(findPreference("sync_frequency"));
+			//bindPreferenceSummaryToValue(findPreference("sync_frequency"));
+			bindPreferenceSummaryToValue(findPreference(getString(R.string.font_size_value)));
+			bindPreferenceSummaryToValue(findPreference(getString(R.string.font_size_for_search_value)));
+			bindPreferenceSummaryToValue(findPreference(getString(R.string.space_size_value)));
+			bindPreferenceSummaryToValue(findPreference(getString(R.string.themes_list)));
 		}
 
-		@Override
-		public boolean onOptionsItemSelected(MenuItem item) {
-			int id = item.getItemId();
-			if (id == android.R.id.home) {
-				startActivity(new Intent(getActivity(), SettingsActivity.class));
-				return true;
-			}
-			return super.onOptionsItemSelected(item);
+	}
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		int id = item.getItemId();
+		if (id == android.R.id.home) {
+			finish();
+			return true;
 		}
+		return super.onOptionsItemSelected(item);
 	}
 }

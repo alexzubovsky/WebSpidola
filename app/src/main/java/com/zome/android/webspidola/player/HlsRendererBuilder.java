@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.example.android.webspidola.player;
+package com.zome.android.webspidola.player;
 
 import android.content.Context;
 import android.media.AudioManager;
 import android.media.MediaCodec;
 import android.os.Handler;
 
-import com.example.android.webspidola.player.ExoMediaPlayer.RendererBuilder;
+import com.zome.android.webspidola.player.ExoMediaPlayer.RendererBuilder;
 import com.google.android.exoplayer.DefaultLoadControl;
 import com.google.android.exoplayer.LoadControl;
 import com.google.android.exoplayer.MediaCodecAudioTrackRenderer;

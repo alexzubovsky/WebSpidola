@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.example.android.webspidola.player;
+package com.zome.android.webspidola.player;
 
 import android.content.Context;
 import android.media.AudioManager;
 import android.media.MediaCodec;
 import android.net.Uri;
 
-import com.example.android.webspidola.player.ExoMediaPlayer.RendererBuilder;
+import com.zome.android.webspidola.player.ExoMediaPlayer.RendererBuilder;
 import com.google.android.exoplayer.MediaCodecAudioTrackRenderer;
 import com.google.android.exoplayer.MediaCodecSelector;
 import com.google.android.exoplayer.MediaCodecVideoTrackRenderer;
@@ -33,7 +33,6 @@ import com.google.android.exoplayer.upstream.Allocator;
 import com.google.android.exoplayer.upstream.DataSource;
 import com.google.android.exoplayer.upstream.DefaultAllocator;
 import com.google.android.exoplayer.upstream.DefaultBandwidthMeter;
-import com.google.android.exoplayer.upstream.DefaultUriDataSource;
 
 /**
  * A {@link RendererBuilder} for streams that can be read using an {@link Extractor}.
@@ -60,7 +59,7 @@ public class ExtractorRendererBuilder implements ExoMediaPlayer.RendererBuilder 
     // Build the video and audio renderers.
     DefaultBandwidthMeter bandwidthMeter = new DefaultBandwidthMeter(player.getMainHandler(),
         null);
-    DataSource dataSource = new DefaultUriDataSource(context, bandwidthMeter, userAgent);
+    DataSource dataSource = new RecordableUriDataSource(context, bandwidthMeter, userAgent);
     ExtractorSampleSource sampleSource = new ExtractorSampleSource(uri, dataSource, allocator,
         BUFFER_SEGMENT_COUNT * BUFFER_SEGMENT_SIZE);
     MediaCodecVideoTrackRenderer videoRenderer = new MediaCodecVideoTrackRenderer(context,
@@ -77,6 +76,7 @@ public class ExtractorRendererBuilder implements ExoMediaPlayer.RendererBuilder 
     renderers[ExoMediaPlayer.TYPE_AUDIO] = audioRenderer;
     renderers[ExoMediaPlayer.TYPE_TEXT] = textRenderer;
     player.onRenderers(renderers, bandwidthMeter);
+    player.setDataSource(dataSource);
   }
 
   @Override

@@ -1,4 +1,4 @@
-package com.example.android.webspidola;
+package com.zome.android.webspidola;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

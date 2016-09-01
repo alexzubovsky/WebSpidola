@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.example.android.webspidola.player;
+package com.zome.android.webspidola.player;
 
 import android.media.MediaCodec.CryptoException;
 import android.net.Uri;
@@ -43,6 +43,7 @@ import com.google.android.exoplayer.metadata.id3.Id3Frame;
 import com.google.android.exoplayer.text.Cue;
 import com.google.android.exoplayer.text.TextRenderer;
 import com.google.android.exoplayer.upstream.BandwidthMeter;
+import com.google.android.exoplayer.upstream.DataSource;
 import com.google.android.exoplayer.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer.util.DebugTextViewHelper;
 import com.google.android.exoplayer.util.PlayerControl;
@@ -63,7 +64,16 @@ public class ExoMediaPlayer implements ExoPlayer.Listener, ChunkSampleSource.Eve
     StreamingDrmSessionManager.EventListener, DashChunkSource.EventListener, TextRenderer,
     MetadataRenderer<List<Id3Frame>>, DebugTextViewHelper.Provider {
 
-  /**
+	private DataSource mDataSource = null;
+
+	public void setDataSource(DataSource dataSource) {
+		this.mDataSource = dataSource;
+	}
+	public DataSource getDataSource() {
+		return this.mDataSource ;
+	}
+
+	/**
    * Builds renderers for the player.
    */
   public interface RendererBuilder {
@@ -177,6 +187,8 @@ public class ExoMediaPlayer implements ExoPlayer.Listener, ChunkSampleSource.Eve
   private CodecCounters codecCounters;
   private Format videoFormat;
   private int videoTrackToRestore;
+  private MediaCodecTrackRenderer audioRenderer;
+
 
   private BandwidthMeter bandwidthMeter;
   private boolean backgrounded;
@@ -303,10 +315,12 @@ public class ExoMediaPlayer implements ExoPlayer.Listener, ChunkSampleSource.Eve
     }
     // Complete preparation.
     this.videoRenderer = renderers[TYPE_VIDEO];
+    this.audioRenderer = (MediaCodecTrackRenderer) renderers[TYPE_AUDIO];
     this.codecCounters = videoRenderer instanceof MediaCodecTrackRenderer
         ? ((MediaCodecTrackRenderer) videoRenderer).codecCounters
         : renderers[TYPE_AUDIO] instanceof MediaCodecTrackRenderer
-        ? ((MediaCodecTrackRenderer) renderers[TYPE_AUDIO]).codecCounters : null;
+          ? this.audioRenderer.codecCounters
+          : null;
     this.bandwidthMeter = bandwidthMeter;
     pushSurface(false);
     player.prepare(renderers);
@@ -598,5 +612,4 @@ public class ExoMediaPlayer implements ExoPlayer.Listener, ChunkSampleSource.Eve
       playing = true;
     return playing;
   }
-
 }

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.example.android.webspidola.player;
+package com.zome.android.webspidola.player;
 
 import android.media.MediaCodec.CryptoException;
 import android.os.SystemClock;
@@ -34,8 +34,8 @@ import java.util.Locale;
 /**
  * Logs player events using {@link Log}.
  */
-public class EventLogger implements ExoMediaPlayer.Listener, ExoMediaPlayer.InfoListener,
-        ExoMediaPlayer.InternalErrorListener, ExoPlayer.Listener {
+public class EventLogger implements com.zome.android.webspidola.player.ExoMediaPlayer.Listener, com.zome.android.webspidola.player.ExoMediaPlayer.InfoListener,
+        com.zome.android.webspidola.player.ExoMediaPlayer.InternalErrorListener, ExoPlayer.Listener {
 
   private static final String TAG = "EventLogger";
   private static final NumberFormat TIME_FORMAT;
@@ -50,7 +50,7 @@ public class EventLogger implements ExoMediaPlayer.Listener, ExoMediaPlayer.Info
   private long[] availableRangeValuesUs;
 
   public EventLogger() {
-    loadStartTimeMs = new long[ExoMediaPlayer.RENDERER_COUNT];
+    loadStartTimeMs = new long[com.zome.android.webspidola.player.ExoMediaPlayer.RENDERER_COUNT];
   }
 
   public void startSession() {
@@ -221,7 +221,7 @@ public class EventLogger implements ExoMediaPlayer.Listener, ExoMediaPlayer.Info
    */
   @Override
   public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
-
+    Log.e(TAG, "onPlayerStateChanged playWhenReady=" + playWhenReady + ", playbackState=" + playbackState);
   }
 
   /**
