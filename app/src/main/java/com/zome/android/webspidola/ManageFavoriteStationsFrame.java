@@ -16,8 +16,6 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-import com.zome.android.webspidola.R;
-
 import java.util.ArrayList;
 
 public class ManageFavoriteStationsFrame extends Fragment{
@@ -58,6 +56,7 @@ public class ManageFavoriteStationsFrame extends Fragment{
 				finishListEdit();
 			}
 		});
+		fab.setOnTouchListener(MainTabbedActivity.onTouchListener);
 		//getActivity().getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 		ArrayList<String[]> stationsList = FavoriteStationsFrame.deSerializeStationsList(FavoriteStationsFrame.preferences.getString(FavoriteStationsFrame.PREFERENCE_LIST_OF_STATIONS, null));
 		initializeStationsList(stationsList);

@@ -14,7 +14,9 @@ import android.content.res.Resources;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.PersistableBundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
@@ -27,21 +29,27 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
-import com.zome.android.webspidola.R;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
 
 import java.io.File;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 //import android.support.v4.view.ViewPager;
 
-public class MainTabbedActivity extends AppCompatActivity{//} implements ManageRecordingsFrame.OnListFragmentInteractionListener{
+public class MainTabbedActivity extends AppCompatActivity implements View.OnTouchListener{//} implements ManageRecordingsFrame.OnListFragmentInteractionListener{
 
 	public static final int FAVORITE_STATIONS = 0;
 	public static final int MANAGE_RECORDINGS = 1;
@@ -75,6 +83,7 @@ public class MainTabbedActivity extends AppCompatActivity{//} implements ManageR
 		if(view instanceof Button)
 			mSavedStationDefinition = new MediaPlayerService.PlayingInfo((Button) view);
 	}
+
 
 	/**
 	 * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
@@ -186,9 +195,9 @@ public class MainTabbedActivity extends AppCompatActivity{//} implements ManageR
 		reReadSettings(true);
 		onActivityCreateSetTheme(mThisActivity = this);
 		checkPermissionsOnInitialization();
-		setContentView(R.layout.activity_main);
+		this.setContentView(R.layout.activity_main);
 
-		Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+		Toolbar toolbar = (Toolbar) findViewById(R.id.main_tabbed_toolbar);
 		setSupportActionBar(toolbar);
 		// Create the adapter that will return a fragment for each of the three
 		// primary sections of the activity.
@@ -197,7 +206,7 @@ public class MainTabbedActivity extends AppCompatActivity{//} implements ManageR
 
 		// Set up the ViewPager with the sections adapter.
 		mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
-		mViewPager = (ViewPager) findViewById(R.id.container);
+		mViewPager = (ViewPager) findViewById(R.id.main_tabbed_container);
 		mViewPager.setAdapter(mSectionsPagerAdapter);
 		mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
 			@Override
@@ -205,12 +214,9 @@ public class MainTabbedActivity extends AppCompatActivity{//} implements ManageR
 			@Override
 			public void onPageSelected(int position) {
 				if (position < 0)
-					position = FRAMES_COUNT - 1;
+					mViewPager.setCurrentItem(FRAMES_COUNT - 1);
 				else if (position > FRAMES_COUNT)
-					position = 0;
-				else
-					return;
-				mViewPager.setCurrentItem(position);
+					mViewPager.setCurrentItem(0);
 			}
 			@Override
 			public void onPageScrollStateChanged(int state) {
@@ -225,7 +231,7 @@ public class MainTabbedActivity extends AppCompatActivity{//} implements ManageR
 			}
 		});
 		//////////////////
-		TabLayout tabLayout = (TabLayout)findViewById(R.id.tabContainer);
+		TabLayout tabLayout = (TabLayout)findViewById(R.id.mainTabsBar);
 		mViewPager.setOffscreenPageLimit(1);
 		mViewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
 		tabLayout.setupWithViewPager(mViewPager);
@@ -239,17 +245,89 @@ public class MainTabbedActivity extends AppCompatActivity{//} implements ManageR
 					registerBroadcastReceivers("FAB:onClick", true);
 			}
 		});
+		//floatingActionButton.setOnLongClickListener(fabMovingSupport);
+		floatingActionButton.setOnTouchListener(onTouchListener);
 		mSavedStationDefinition = getSavedStationDefinition(savedInstanceState);
 		//registerBroadcastReceiver("onCreate:"+(savedInstanceState!=null?savedInstanceState.getClass().getSimpleName():""));
-
+		setUpAdMob();
+		//mViewPager.setOnSystemUiVisibilityChangeListener(onSystemUiVisibilityChangeListener);
 
 		Log.e("MTA:onCreate1:",(savedInstanceState!=null?savedInstanceState.getClass().getSimpleName():""));
+	}
+	private static final boolean adMobShallBeShown = false;
+	private void setUpAdMob(){
+		int adMobCorrection = 0;
+		float coeff = 0.98f;
+		if(adMobShallBeShown) {
+			AdView adMob = (AdView) findViewById(R.id.ad_mob_view);
+			MobileAds.initialize(getApplicationContext(), "ca-app-pub-5265061023469633~6963313508");
+			AdRequest adRequest = new AdRequest.Builder().build();
+			adMob.loadAd(adRequest);
+			adMobCorrection = AdSize.BANNER.getHeight();
+			coeff = 1.5f;
+		}
+		TypedValue tv = new TypedValue();
+		if (getTheme().resolveAttribute(android.R.attr.actionBarSize, tv, true)){
+			int actionBarHeight = TypedValue.complexToDimensionPixelSize(tv.data,getResources().getDisplayMetrics());
+			TabLayout tabLayout = (TabLayout) findViewById(R.id.mainTabsBar);
+			//if(tabLayout.getVisibility()==View.VISIBLE)
+			//	actionBarHeight+=tabLayout.getHeight();
+			mViewPager.setPadding(mViewPager.getPaddingLeft(),mViewPager.getPaddingTop(),mViewPager.getPaddingRight(),Math.round(coeff*actionBarHeight) + adMobCorrection);
+		}
 	}
 	/*
 	private void setupTabItem(TabItem v){
 		v.setOnClickListener(tabItemOnClickListener);
 		((TextView)v).setText(mSectionsPagerAdapter.getPageTitle(Integer.parseInt((String)v.getTag())));
 	}*/
+	/*public View.OnLongClickListener fabMovingSupport = new View.OnLongClickListener(){
+		@Override
+		public boolean onLongClick(View view) {
+			view.setPadding(view.getPaddingLeft(), view.getPaddingTop(),view.getPaddingRight(),view.getPaddingBottom()+16);
+			FloatingActionButton fab = (FloatingActionButton)view;
+			Log.e("fabMovingSupport", String.valueOf(fab.getTop()));
+			return false;
+		}
+	};*/
+	private static Float previousX = null;
+	private static Float previousY = null;
+	@Override
+	public boolean onTouch(View view, MotionEvent motionEvent) {
+		return onTouchImplementation(view, motionEvent);
+	}
+
+	public static View.OnTouchListener onTouchListener = new View.OnTouchListener() {
+		@Override
+		public boolean onTouch(View view, MotionEvent motionEvent) {
+			return onTouchImplementation(view, motionEvent);
+		}
+	};
+	private static boolean onTouchImplementation(View view, MotionEvent motionEvent) {
+		Log.e("onTouch", view.getClass().getSimpleName() + "," + motionEvent.getAction());
+		if (view instanceof FloatingActionButton) {
+			FloatingActionButton fab = (FloatingActionButton) view;
+			switch (motionEvent.getAction()) {
+				case MotionEvent.ACTION_MOVE:
+					if (previousX != null && previousY != null) {
+						//fab.animate().translationYBy(previousY - motionEvent.getY()).translationXBy(previousX - motionEvent.getX());
+						Log.e("onTouch", view.getClass().getSimpleName() + ",X:" + (previousX - motionEvent.getX())+ ",Y:"+(previousY - motionEvent.getY()));
+					}//else
+						break;
+				case MotionEvent.ACTION_DOWN:
+					previousY = motionEvent.getY();
+					previousX = motionEvent.getX();
+					break;
+				case MotionEvent.ACTION_UP:
+					if (previousX != null && previousY != null) {
+						fab.animate().translationYBy(motionEvent.getY()- previousY).translationXBy(motionEvent.getX()- previousX );
+						Log.e("onUp", view.getClass().getSimpleName() + ",X:" + (motionEvent.getX()- previousX)+ ",Y:"+(motionEvent.getY()- previousY));
+					}
+					previousY = null;
+					previousX = null;
+			}
+		}
+		return false;
+	}
 	private int previousState, currentState;
 	private void showPlayPauseButton() {
 		FloatingActionButton button = getPlayStopButton();
@@ -416,14 +494,26 @@ public class MainTabbedActivity extends AppCompatActivity{//} implements ManageR
 			/*case R.id.action_add:
 				intent = new Intent(this, SearchForStationsFrame.class);
 				startActivityForResult(intent, FavoriteStationsFrame.RESULT_ADD_STATIONS);
+				return true;*/
+			case R.id.action_help:
+				intent = new Intent(this, HelpActivity.class);
+				intent.putExtra(HelpActivity.ARG_SECTION_NUMBER, mViewPager.getCurrentItem());
+				startActivity(intent);
 				return true;
-			case R.id.action_edit:
-				intent = new Intent(this, ManageFavoriteStationsFrame.class);
-				startActivityForResult(intent, FavoriteStationsFrame.RESULT_EDIT_STATIONS);
+			/*case R.id.action_help1:
+				intent = new Intent(this, HelpTabbedActivity.class);
+				intent.putExtra(HelpTabbedActivity.PlaceholderFragment.ARG_SECTION_NUMBER, mViewPager.getCurrentItem());
+				startActivity(intent);
 				return true;*/
 			case android.R.id.home:
 			case R.id.action_exit:
-				exitApp();
+				Handler delayedPost = new Handler();
+				delayedPost.postDelayed(new Runnable() {
+					@Override
+					public void run() {
+						exitApp();
+					}
+				}, 100);//exitApp();
 				return true;
 			case R.id.action_volume_down:
 			case R.id.action_volume_up:
@@ -478,12 +568,23 @@ public class MainTabbedActivity extends AppCompatActivity{//} implements ManageR
 	public void onResume() {
 		super.onResume();
 		reReadSettings();
+
 		Log.e("MTA:onResume:","");
 		//bindMPService();
 		/*
 		IntentFilter intentFilter = new IntentFilter(MediaPlayerService.CUSTOM_EVENT);
 		LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver, intentFilter);*/
 	}
+	/*
+	private View.OnSystemUiVisibilityChangeListener onSystemUiVisibilityChangeListener = new View.OnSystemUiVisibilityChangeListener(){
+		@Override
+		public void onSystemUiVisibilityChange(int visible) {
+			if(visible == View.VISIBLE) {
+				adjustScrollingHeight();
+			}
+		}
+	};
+	*/
 
 	@Override
 	public void onDestroy() {
@@ -506,6 +607,21 @@ public class MainTabbedActivity extends AppCompatActivity{//} implements ManageR
 			if (mService.isAutoPlayCase() && getBooleanPreference(getString(R.string.autoplay_switch), false) && mSavedStationDefinition != null)
 				doClickOnStopPlayButton(/*getPlayStopButton(), */false);
 			synchronizePlayPauseButton();
+			FragmentManager fm = getSupportFragmentManager();
+			if (fm != null) {
+				List<Fragment> fragments = fm.getFragments();
+				if(fragments != null) {
+					for (Fragment fragment : fragments) {
+						if (fragment != null) {
+							if (fragment instanceof FavoriteStationsFrame) {
+								((FavoriteStationsFrame) fragment).synchronizeOnServiceConnected(mService);// do something
+								Log.e("MTA:onServ.Conn.", "FSF:synchronizeOnServiceConnected");
+								break;
+							}
+						}
+					}
+				}
+			}
 			Log.e("MTA:onServ.Conn.", className.toString());
 		}
 
@@ -688,6 +804,8 @@ public class MainTabbedActivity extends AppCompatActivity{//} implements ManageR
 	}
 	public static MediaPlayerService.PlayingInfo getSavedStationDefinition(Bundle savedInstanceState){
 		MediaPlayerService.PlayingInfo prefDef = new MediaPlayerService.PlayingInfo(mPreferences.getString(MediaPlayerService.SELECTED_STATION_DEFINITION, null));
+		if(!prefDef.isValid())
+			prefDef = null;
 		if(savedInstanceState!= null)
 		{
 			MediaPlayerService.PlayingInfo instanceDef = new MediaPlayerService.PlayingInfo(savedInstanceState.getStringArray(MediaPlayerService.SELECTED_STATION_DEFINITION));
@@ -698,6 +816,17 @@ public class MainTabbedActivity extends AppCompatActivity{//} implements ManageR
 		}
 		return prefDef;
 	}
+
+	@Override
+	public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
+		super.onSaveInstanceState(outState, outPersistentState);
+		if (mSavedStationDefinition != null) {
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+				outPersistentState.putStringArray(MediaPlayerService.SELECTED_STATION_DEFINITION, mSavedStationDefinition.serializeToStringArray());
+			}
+		}
+	}
+
 	public static void reReadSettings() {
 		reReadSettings(false);
 	}

@@ -2,17 +2,14 @@ package com.zome.android.webspidola;
 
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
@@ -27,7 +24,6 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
-import com.zome.android.webspidola.R;
 import com.google.android.exoplayer.util.Util;
 
 import org.json.JSONArray;
@@ -109,10 +105,12 @@ public class FavoriteStationsFrame extends Fragment {//AppCompatActivity {
 	private static ViewGroup mFragmentContainer;
 	private static Bundle mFragmentSavedInstanceState;
 	private static View mFragmentRootView;
+	private static FavoriteStationsFrame mThis;
 	private MediaPlayerService.PlayingInfo mSavedStationDefinition;
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		super.onCreateView(inflater, container, savedInstanceState);
+		mThis = this;
 		mFragmentInflater = inflater;
 		mFragmentContainer = container;
 		mFragmentSavedInstanceState =savedInstanceState;
@@ -136,6 +134,13 @@ public class FavoriteStationsFrame extends Fragment {//AppCompatActivity {
 		mSavedStationDefinition = MainTabbedActivity.getSavedStationDefinition(savedInstanceState);
 		initializeStationsList(mSavedStationDefinition);
 		getActivity().startService(new Intent(mFragmentContainer.getContext(), MediaPlayerService.class));//make sure service will not stop until stopService issued
+
+		/*MobileAds.initialize(mFragmentContainer.getContext()/*getApplicationContext()* /, "ca-app-pub-5265061023469633~6963313508");
+		AdView mAdView = (AdView) mFragmentRootView.findViewById(R.id.adView);
+		if(mAdView!=null) {
+			AdRequest adRequest = new AdRequest.Builder().build();
+			mAdView.loadAd(adRequest);
+		}*/
 		return  mFragmentRootView;
 	}
 
@@ -451,23 +456,49 @@ public class FavoriteStationsFrame extends Fragment {//AppCompatActivity {
 		LocalBroadcastManager.getInstance(context/*this*/).registerReceiver(mMessageReceiver, intentFilter);
 		Log.i("MA:OnResume", "registerReceiver(mMessageReceiver, intentFilter=" + intentFilter.toString() + ")");
 
-		mFragmentContainer.getContext().bindService(new Intent(context, MediaPlayerService.class), mServiceConnection, Context.BIND_AUTO_CREATE);
+		//context.bindService(new Intent(context, MediaPlayerService.class), mServiceConnection, Context.BIND_AUTO_CREATE);
 	}
 	@Override
 	public void onPause(){
 		LocalBroadcastManager.getInstance(mFragmentContainer.getContext()/*this*/).unregisterReceiver(mMessageReceiver);
-		unBindMPService();
+		//unBindMPService();
 		super.onPause();
 	}
-	boolean mBound = false;
+	public void synchronizeOnServiceConnected(MediaPlayerService mService){
+		Log.d("FSF","onServiceConnected "+ mService.toString());
+		String currentPlayingStationName = mService.whatIsPlaying();
+		HashMap<String, Integer> recordingMap = mService.getRecordingMap();
+		RadioGroup stationsRadioGroup = getStationsRadioGroup();
+		int stations = stationsRadioGroup.getChildCount();
+		RadioButton radioButton;
+		View row;
+		Integer currentRecordingStatus;
+		for(int i=0;stations > i;i++){
+			row = stationsRadioGroup.getChildAt(i);
+			if(row != null && row instanceof LinearLayout) {
+				radioButton = (RadioButton) ((LinearLayout)row).getChildAt(POSITION_RADIO);
+				if (selectedStation == null && currentPlayingStationName != null && radioButton.getText().equals(currentPlayingStationName)) {
+					selectedStation = radioButton;
+					stationsRadioGroup.check(radioButton.getId());
+				}
+				setCurrentRecordingControls(radioButton, recordingMap.get(radioButton.getTag(MediaPlayerService.TAG_URI)));
+			}
+		}
+		/*
+		synchronizePlayPauseButton();
+		if (mService.isAutoPlayCase() && getBooleanPreference("autoplay_switch", false) && selectedStation != null)
+			doClickOnStopPlayButton(getPlayStopButton(), false);
+		*/
+
+	}
+	/*boolean mBound = false;
 	MediaPlayerService mService;
 	private void unBindMPService() {
 		if(mBound){
-			mFragmentContainer.getContext()/*this*/.unbindService(mServiceConnection);
+			mFragmentContainer.getContext()/*this* /.unbindService(mServiceConnection);
 			mBound = false;
 		}
 	}
-
 	private ServiceConnection mServiceConnection = new ServiceConnection() {
 		@Override
 		public void onServiceConnected(ComponentName className, IBinder service) {
@@ -475,30 +506,7 @@ public class FavoriteStationsFrame extends Fragment {//AppCompatActivity {
 			MediaPlayerService.LocalMPBinder binder = (MediaPlayerService.LocalMPBinder) service;
 			mService = binder.getService();
 			mBound = true;
-			Log.d("FSF","onServiceConnected "+ mService.toString());
-			String currentPlayingStationName = mService.whatIsPlaying();
-			HashMap<String, Integer> recordingMap = mService.getRecordingMap();
-			RadioGroup stationsRadioGroup = getStationsRadioGroup();
-			int stations = stationsRadioGroup.getChildCount();
-			RadioButton radioButton;
-			View row;
-			Integer currentRecordingStatus;
-			for(int i=0;stations > i;i++){
-				row = stationsRadioGroup.getChildAt(i);
-				if(row != null && row instanceof LinearLayout) {
-					radioButton = (RadioButton) ((LinearLayout)row).getChildAt(POSITION_RADIO);
-					if (selectedStation == null && currentPlayingStationName != null && radioButton.getText().equals(currentPlayingStationName)) {
-						selectedStation = radioButton;
-						stationsRadioGroup.check(radioButton.getId());
-					}
-					setCurrentRecordingControls(radioButton, recordingMap.get(radioButton.getTag(MediaPlayerService.TAG_URI)));
-				}
-			}
-			/*
-			synchronizePlayPauseButton();
-			if (mService.isAutoPlayCase() && getBooleanPreference("autoplay_switch", false) && selectedStation != null)
-				doClickOnStopPlayButton(getPlayStopButton(), false);
-				*/
+			synchronizeOnServiceConnected();
 		}
 		@Override
 		public void onServiceDisconnected(ComponentName arg0) {
@@ -507,7 +515,7 @@ public class FavoriteStationsFrame extends Fragment {//AppCompatActivity {
 		}
 	};
 
-
+*/
 
 	/*
 	private FloatingActionButton getPlayStopButton() {
@@ -943,6 +951,7 @@ public class FavoriteStationsFrame extends Fragment {//AppCompatActivity {
 		changeSettingsViewVisibility(View.GONE);
 	}
 	*/
+
 	public void changeSettingsViewVisibility(int visibility){
 		View settingsView = getActivity().findViewById(R.id.settings_view);
 		settingsView.setVisibility(visibility);

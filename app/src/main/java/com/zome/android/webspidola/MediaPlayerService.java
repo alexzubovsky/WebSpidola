@@ -31,7 +31,6 @@ import android.widget.Button;
 import android.widget.MediaController;
 import android.widget.Toast;
 
-import com.zome.android.webspidola.R;
 import com.google.android.exoplayer.ExoPlaybackException;
 import com.google.android.exoplayer.ExoPlayer;
 import com.google.android.exoplayer.MediaCodecTrackRenderer;
@@ -134,9 +133,9 @@ public class MediaPlayerService extends Service implements AudioManager.OnAudioF
 	//PlayerActivityHelper
 
 	private static NotificationManagerCompat mNotificationManager = null;
-	private static String currentlyPlayingUrl = null;
-	private String preparingUrl = null;
-	private static String selectedStationName = null;
+	//private String preparingUrl = null;
+	//private static String currentlyPlayingUrl = null;
+	//private static String selectedStationName = null;
 	private static int mCurrentHeadsetState = NO_CURRENT_HEADSET_STATE;
 	//private int mediaPlayerRegisteredState = IS_NULL;
 	private WifiManager.WifiLock mWifiLoc = null;
@@ -181,7 +180,7 @@ public class MediaPlayerService extends Service implements AudioManager.OnAudioF
 		if(isPlaying()){
 			RecordableUriDataSource dataSourceForRecording = (RecordableUriDataSource) mediaPlayer.getDataSource();
 			if(dataSourceForRecording != null && dataSourceForRecording.isRecording())
-				returnMap.put(currentlyPlayingUrl, isOnPause() ? MediaPlayerService.AUDIO_RECORDING_PAUSE : MediaPlayerService.AUDIO_RECORDING_START);
+				returnMap.put(currentlyPlayingInfo.uri, isOnPause() ? MediaPlayerService.AUDIO_RECORDING_PAUSE : MediaPlayerService.AUDIO_RECORDING_START);
 		}
 		int currentStatus;
 		Set<String> keys = mAudioRecordingMap.keySet();
@@ -197,9 +196,9 @@ public class MediaPlayerService extends Service implements AudioManager.OnAudioF
 		return returnMap;
 	}
 
-	public String getCurrentStationUrl() {
+	/*public String getCurrentStationUrl() {
 		return currentlyPlayingUrl;
-	}
+	}*/
 
 	/**
 	 * Class used for the client Binder.  Because we know this service always
@@ -294,12 +293,12 @@ public class MediaPlayerService extends Service implements AudioManager.OnAudioF
 	private static String mAudioLevelBeforePauseByHeadsetDisconnectUrl = "";
 	private void setAudioLevelBeforePauseByHeadsetDisconnectUrl() {
 		if(mMonitorAudioLevelOnHeadphones) {
-			mAudioLevelBeforePauseByHeadsetDisconnectUrl = currentlyPlayingUrl;
+			mAudioLevelBeforePauseByHeadsetDisconnectUrl = currentlyPlayingInfo.uri;
 			mAudioLevelBeforePauseByHeadsetDisconnect = mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
 		}
 	}
 	private void restoreAudioLevelBeforePauseByHeadsetDisconnectUrl() {
-		if(mMonitorAudioLevelOnHeadphones && mAudioLevelBeforePauseByHeadsetDisconnectUrl.equals(currentlyPlayingUrl))
+		if(mMonitorAudioLevelOnHeadphones && mAudioLevelBeforePauseByHeadsetDisconnectUrl.equals(currentlyPlayingInfo.uri))
 			mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC, mAudioLevelBeforePauseByHeadsetDisconnect, AudioManager.FLAG_PLAY_SOUND + AudioManager.FLAG_SHOW_UI);
 	}
 	public class BroadcastNotificationReceiver extends BroadcastReceiver {
@@ -548,6 +547,9 @@ public class MediaPlayerService extends Service implements AudioManager.OnAudioF
 		mNotificationManager.notify(NOTIFICATION_ID, notification);// mId allows you to update the notification later on.
 		//End building Notification Area content
 	}
+	private static void engageNotificationBarAsPlaying(PlayingInfo info) {
+		engageNotificationBarAsPlaying(info!=null?info.name:"Unknown station");
+	}
 	private static void engageNotificationBarAsPlaying(String text) {
 		NotificationCompat.Action[] actions = {generateAction(R.drawable.ic_media_pause, "Pause", ACTION_PAUSE)};
 		mCurrentPlayingStatus = CURRENT_PLAYING_STATUS_PLAY;
@@ -563,10 +565,17 @@ public class MediaPlayerService extends Service implements AudioManager.OnAudioF
 	public final static int CURRENT_PLAYING_STATUS_NONE = 0;
 	public final static int CURRENT_PLAYING_STATUS_PLAY = 1;
 	public final static int CURRENT_PLAYING_STATUS_PAUSE = 2;
+
+	private static void engageNotificationBarAsPaused(PlayingInfo info) {
+		engageNotificationBarAsPaused(info!=null?info.name:"Unknown station");
+	}
 	private static void engageNotificationBarAsPaused(String text) {
 		NotificationCompat.Action[] actions = {generateAction(R.drawable.ic_media_play, "Play", ACTION_PLAY)};
 		mCurrentPlayingStatus = CURRENT_PLAYING_STATUS_PAUSE;
 		engageNotificationBar("Paused:" + text, actions);
+	}
+	private static void engageNotificationBarAsConnecting(PlayingInfo info) {
+		engageNotificationBarAsConnecting(info!=null?info.name:"Unknown station");
 	}
 	private static void engageNotificationBarAsConnecting(String text) {
 		NotificationCompat.Action[] actions = {generateAction(R.drawable.ic_media_pause, "Pause", ACTION_PAUSE)};
@@ -575,7 +584,7 @@ public class MediaPlayerService extends Service implements AudioManager.OnAudioF
 	}
 	private static void engageNotificationBarAsStopped() {
 		NotificationCompat.Action[] actions;
-		if(selectedStationName!=null ) {
+		if(currentlyPlayingInfo!=null ) {
 			actions = new NotificationCompat.Action[]{generateAction(R.drawable.ic_media_play, "Play", ACTION_PLAY)};
 			mCurrentPlayingStatus = CURRENT_PLAYING_STATUS_NONE;
 		}
@@ -617,7 +626,7 @@ public class MediaPlayerService extends Service implements AudioManager.OnAudioF
 	/** methods for clients */
 	private static boolean isMediaPlayerReadyToContinue(){
 		//if (mediaPlayerRegisteredState != ON_STOP && mediaPlayerRegisteredState != ON_STOP_BY_ERROR && !isPlaying() && url == currentlyPlayingUrl) {
-		return mediaPlayer != null && mediaPlayer.getPlaybackState() == ExoPlayer.STATE_READY && !mediaPlayer.getPlayerControl().isPlaying() && mediaPlayer.getRenderedUri().equals(Uri.parse(currentlyPlayingUrl));
+		return mediaPlayer != null && mediaPlayer.getPlaybackState() == ExoPlayer.STATE_READY && !mediaPlayer.getPlayerControl().isPlaying() && mediaPlayer.getRenderedUri().equals(Uri.parse(currentlyPlayingInfo.uri));
 	}
 	public static void reStartPlay() {
 		if(isMediaPlayerReadyToContinue()){//mediaPlayerRegisteredState == ON_PAUSE) {
@@ -627,7 +636,7 @@ public class MediaPlayerService extends Service implements AudioManager.OnAudioF
 				playerNeedsPrepare = false;
 			}
 			mediaPlayer.getPlayerControl().start();//start-resume
-			engageNotificationBarAsPlaying(selectedStationName);
+			engageNotificationBarAsPlaying(currentlyPlayingInfo);
 			logAndBroadcast("i", CURRENT_STATUS_RESUMED+" "+CURRENT_STATUS_IN_PLAY + " after pause");
 			return;
 		}
@@ -635,58 +644,45 @@ public class MediaPlayerService extends Service implements AudioManager.OnAudioF
 			startPlay();
 	}
 	public static void startPlay() {
-		if(currentlyPlayingUrl != null && selectedStationName != null)
-			startPlay(currentlyPlayingUrl, selectedStationName);
+		if(currentlyPlayingInfo != null)//currentlyPlayingUrl != null && selectedStationName != null)
+			startPlay(currentlyPlayingInfo);//, selectedStationName);
 	}
-	public static void startPlay(String url, String stationName){
+	/*public static void startPlay(String url, String stationName){
 		startPlay(new PlayingInfo((new StringBuffer(String.valueOf(Util.TYPE_OTHER)).append(' ').append(url).append(' ').append(stationName)).toString()));
-	}
+	}*/
 	public static void startPlay(PlayingInfo stationDef){
-		String url = stationDef.uri;
-		String stationName = stationDef.name;
-		int type = stationDef.type;
 		try{
 			if(mediaPlayer != null) {
 				if (isMediaPlayerReadyToContinue()) {
 					//mediaPlayerRegisteredState = ON_STARTED;
 					mediaPlayer.getPlayerControl().start();//start-resume
-					engageNotificationBarAsPlaying(selectedStationName);
+					engageNotificationBarAsPlaying(currentlyPlayingInfo.name);//selectedStationName);
 					logAndBroadcast("i", "Start "+CURRENT_STATUS_IN_PLAY + " after pause");
 					return;
 				}
-				else
+				else//releasePlayer();
 					stopPlay(true);//logAndBroadcast("d", CURRENT_STATUS_IN_PLAY + " when mediaPlayer.getPlaybackState=" + (new Integer(mediaPlayer.getPlaybackState())).toString() + " ,mediaPlayer.getPlayerControl().isPlaying(="+mediaPlayer.getPlayerControl().isPlaying());
-				//releasePlayer();
+
 			}
 			//else
 				//mediaPlayerRegisteredState = IS_NULL;
 		} catch (Exception eOnResume){
 			logAndBroadcast("e", CURRENT_STATUS_RESUMED+" after pause " + eOnResume.getMessage());
 		}
-		//Start or resume with new url
-		selectedStationName = stationName;
-		currentlyPlayingUrl = url;
-		currentlyPlayingInfo = stationDef;
-		preparePlayer(true);//getStoppedMediaPlayer();
-		//mediaPlayerRegisteredState = ON_PREPARE;
-		engageNotificationBarAsConnecting(selectedStationName);
-		StringBuffer mess = new StringBuffer("Preparing");
-		logAndBroadcast("o", mess.toString());
-		showMessageInPopup(mess.append(": ").append(selectedStationName));
-		/*try {
-			selectedStationName = stationName;
-			currentlyPlayingUrl = null;
-
-			mediaPlayer.reset();
-			mediaPlayer.setDataSource(preparingUrl = url);
-			mediaPlayer.setLooping(false);//No Looping for streaming content
-			mediaPlayer.prepareAsync();
-			mediaPlayerRegisteredState = ON_PREPARE;
-			engageNotificationBarAsConnecting(selectedStationName);
-			logAndBroadcast("o", "Preparing");
-		} catch (IllegalArgumentException | IOException e) {
-			logAndBroadcast("e", e.getMessage());
-		}*/
+		if(stationDef.isValid()) {
+			//Start or resume with new url
+			//selectedStationName = stationDef.name;
+			//currentlyPlayingUrl = stationDef.uri;
+			currentlyPlayingInfo = stationDef;
+			preparePlayer(true);//getStoppedMediaPlayer();
+			//mediaPlayerRegisteredState = ON_PREPARE;
+			engageNotificationBarAsConnecting(currentlyPlayingInfo);//selectedStationName);
+			StringBuffer mess = new StringBuffer("Preparing");
+			logAndBroadcast("o", mess.toString());
+			showMessageInPopup(mess.append(": ").append(currentlyPlayingInfo.name));//selectedStationName));
+		}
+		else
+			currentlyPlayingInfo = null;
 	}
 	private static Toast toastMessage;
 	public static void showMessageInPopup(String message) {
@@ -728,7 +724,7 @@ public class MediaPlayerService extends Service implements AudioManager.OnAudioF
 			//mediaPlayerRegisteredState = ON_PAUSE;
 			mediaPlayer.getPlayerControl().pause();//pause
 			logAndBroadcast("i", CURRENT_STATUS_IN_PAUSE);
-			engageNotificationBarAsPaused(selectedStationName);
+			engageNotificationBarAsPaused(currentlyPlayingInfo);//selectedStationName);
 		}
 		//else mediaPlayerRegisteredState = IS_NULL;
 		return paused;
@@ -738,7 +734,7 @@ public class MediaPlayerService extends Service implements AudioManager.OnAudioF
 	}
 	public static void stopPlay(boolean noNotif) {
 		if (mediaPlayer != null) {
-			selectedStationName = null;//mediaPlayerRegisteredState = state;
+			currentlyPlayingInfo = null;//selectedStationName = null;//mediaPlayerRegisteredState = state;
 			mediaPlayer.getPlayerControl().pause();
 			releasePlayer();
 			if(!noNotif)
@@ -748,11 +744,12 @@ public class MediaPlayerService extends Service implements AudioManager.OnAudioF
 	}
 	public String whatIsPlaying(){
 		boolean playing = mediaPlayer!=null && (isPlaying() || isMediaPlayerReadyToContinue());//mediaPlayerRegisteredState == ON_PAUSE));
-		return playing ? selectedStationName : null;
+		return playing && currentlyPlayingInfo!=null? currentlyPlayingInfo.name/*selectedStationName*/ : null;
 	}
+	/*
 	public String getCurrentStationName(){
 		return selectedStationName;
-	}
+	}*/
 	private static void logAndBroadcast(String category, String mess){
 		int extra = 0;
 		switch(category) {
@@ -869,10 +866,10 @@ public class MediaPlayerService extends Service implements AudioManager.OnAudioF
 						engageNotificationBarAsStopped();
 						break;
 					case CURRENT_STATUS_IN_PLAY:
-						engageNotificationBarAsPlaying(selectedStationName);
+						engageNotificationBarAsPlaying(currentlyPlayingInfo);//selectedStationName);
 						break;
 					case CURRENT_STATUS_IN_PAUSE:
-						engageNotificationBarAsPaused(selectedStationName);
+						engageNotificationBarAsPaused(currentlyPlayingInfo);//selectedStationName);
 				}
 				sendMessageToTheClients(command, param);
 				break;
@@ -890,8 +887,8 @@ public class MediaPlayerService extends Service implements AudioManager.OnAudioF
 
 	private static void preparePlayer(boolean playWhenReady) {
 		if (mediaPlayer == null) {
-			ExoMediaPlayer.RendererBuilder renderer = getRendererBuilder(currentlyPlayingUrl);
-			mediaPlayer = new ExoMediaPlayer(renderer, Uri.parse(currentlyPlayingUrl));
+			ExoMediaPlayer.RendererBuilder renderer = getRendererBuilder(currentlyPlayingInfo.uri);
+			mediaPlayer = new ExoMediaPlayer(renderer, Uri.parse(currentlyPlayingInfo.uri));
 			//mediaPlayer.getCurrentPosition();mediaPlayer.getPlayerControl().getCurrentPosition();
 			mediaPlayer.addListener(mediaPlayerListener);
 			mediaPlayer.setCaptionListener(mediaPlayerCaptionListener);
@@ -1186,7 +1183,7 @@ public class MediaPlayerService extends Service implements AudioManager.OnAudioF
 					break;
 				case ExoPlayer.STATE_READY:
 					//mediaPlayerRegisteredState =mediaPlayer.getPlayWhenReady() ? BROADCAST_MESSAGE_EXTRA_BROADCAST_MESSAGE_EXTRA_ON_PREPARED_FINISHED : ON_PAUSE;
-					status = currentlyPlayingUrl != null ? CURRENT_STATUS_IN_PLAY : CURRENT_STATUS_IN_STOP;
+					status = currentlyPlayingInfo != null ? CURRENT_STATUS_IN_PLAY : CURRENT_STATUS_IN_STOP;
 					text += "ready";
 					break;
 				default:
@@ -1239,7 +1236,7 @@ public class MediaPlayerService extends Service implements AudioManager.OnAudioF
 								break;
 						}
 						StringBuffer mess = new StringBuffer("Url of station '");
-						mess.append(selectedStationName).append("' (").append(currentlyPlayingUrl).append(") ").append(word).append("is not available");
+						mess.append(currentlyPlayingInfo.name).append("' (").append(currentlyPlayingInfo.uri).append(") ").append(word).append("is not available");
 						showMessageInPopup(mess);
 						stopPlay();
 						extra = DO_NOT_ADD_STATION;
@@ -1339,7 +1336,7 @@ public class MediaPlayerService extends Service implements AudioManager.OnAudioF
 				switch (action) {
 					case AUDIO_RECORDING_START:
 						if(path != null)
-							dataSourceForRecording.prepare(currentlyPlayingUrl, path, prefix, "mp3", fileIsReadyListener);
+							dataSourceForRecording.prepare(currentlyPlayingInfo.uri, path, prefix, "mp3", fileIsReadyListener);
 						break;
 					case AUDIO_RECORDING_RESTART:
 						dataSourceForRecording.recordingStart();
@@ -1555,13 +1552,14 @@ public class MediaPlayerService extends Service implements AudioManager.OnAudioF
 	*/
 	public static class PlayingInfo implements Comparator<PlayingInfo> {
 
-		public final String name;
-		public final String contentId;
-		public final String provider;
-		public final String uri;
-		public final int type;
-		public final long lastModified;
+		public String name = null;
+		public String contentId = "";
+		public String provider = "";
+		public String uri = null;
+		public int type = Util.TYPE_OTHER;
+		public long lastModified = 0;
 		public long length = 0;
+		private Integer groupId = null;
 		//private Integer associatedViewId = null;
 		//private Integer groupViewId = null;
 
@@ -1572,10 +1570,6 @@ public class MediaPlayerService extends Service implements AudioManager.OnAudioF
 		public PlayingInfo(Button station) {
 			this.name = (String) station.getText();
 			this.uri = station.getTag(TAG_URI).toString();
-			this.type = safeConvertType(String.valueOf( station.getTag(TAG_TYPE)));
-			this.contentId = "";
-			this.provider = "";
-			this.lastModified = 0;
 		}
 
 		private static int safeConvertType(String type){
@@ -1607,11 +1601,6 @@ public class MediaPlayerService extends Service implements AudioManager.OnAudioF
 				}
 			}
 			this.name = serializedPlayInfo;
-			this.contentId = "";
-			this.provider = "";
-			this.uri = "";
-			this.type = Util.TYPE_OTHER;
-			this.lastModified = 0;
 			Exception e = new Exception("Wrong string to desirialize:"+serializedPlayInfo);
 			e.printStackTrace();
 		}
@@ -1625,14 +1614,9 @@ public class MediaPlayerService extends Service implements AudioManager.OnAudioF
 				//def[DEF_POS_LABEL] = savedPrefString.substring(pos1 + 1);
 			}else{
 				this.name = playInfoStringArray !=null ? playInfoStringArray[0] :"";
-				this.uri = "";
-				this.type = Util.TYPE_OTHER;
 				Exception e = new Exception("Wrong string array to desirialize:" + (playInfoStringArray== null?"null":"length="+playInfoStringArray.length));
 				e.printStackTrace();
 			}
-			this.contentId = "";
-			this.provider = "";
-			this.lastModified = 0;
 		}
 		public PlayingInfo(String name, String uri, int type) {
 			this(name, uri, type,0);
@@ -1648,6 +1632,9 @@ public class MediaPlayerService extends Service implements AudioManager.OnAudioF
 			this.uri = uri;
 			this.type = type;
 			this.lastModified = lastModified;
+		}
+		public boolean isValid(){
+			return (this.uri != null && !this.uri.isEmpty());
 		}
 
 		@Override
@@ -1681,6 +1668,14 @@ public class MediaPlayerService extends Service implements AudioManager.OnAudioF
 				item.length = length;
 			}
 			return item;
+		}
+
+		public void setGroupId(int groupId) {
+			this.groupId = groupId;
+		}
+
+		public Integer getGroupId() {
+			return this.groupId;
 		}
 		/*
 		public int setViewId(int viewId) {

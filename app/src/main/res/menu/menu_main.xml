@@ -24,11 +24,16 @@
         android:title="@string/shortening_names"
         android:checkable="true"
         android:checked="true"/>
-    <!--item
-         android:id="@+id/action_edit"
+    <item
+         android:id="@+id/action_help"
          android:orderInCategory="250"
-         android:title="@string/title_activity_edit_stations_list"
-         app:showAsAction="never"/-->
+         android:title="@string/title_activity_help"
+         app:showAsAction="never"/>
+    <!--item
+        android:id="@+id/action_help1"
+        android:orderInCategory="251"
+        android:title="@string/title_activity_help"
+        app:showAsAction="never"/-->
     <item
         android:id="@+id/action_exit"
         android:orderInCategory="300"

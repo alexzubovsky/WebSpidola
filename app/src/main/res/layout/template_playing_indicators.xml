@@ -12,9 +12,12 @@
             android:id="@+id/overall_previous"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textColor="#FFFFFF"
+            android:textSize="32sp"
             android:text="◄"
             android:tag="-1"
-            android:layout_gravity="left|center_vertical"/>
+            android:layout_gravity="left|center_vertical"
+            android:textIsSelectable="false"/>
         <SeekBar
             style="?android:attr/progressBarStyleHorizontal"
             android:layout_width="0dp"
@@ -22,7 +25,7 @@
             android:layout_height="wrap_content"
             android:id="@+id/overallProgressBar"
             android:max="100"
-            android:layout_gravity="center_horizontal"
+            android:layout_gravity="center"
             android:progress="0"
             android:visibility="visible"
             android:scrollIndicators="left|right"
@@ -32,8 +35,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="►"
+            android:textColor="#FFFFFF"
+            android:textSize="32sp"
             android:tag="1"
-            android:layout_gravity="center_vertical|right"/>
+            android:layout_gravity="right|center_vertical"
+            android:textIsSelectable="false"/>
     </LinearLayout>
 
     <SeekBar
@@ -60,6 +66,7 @@
             android:layout_height="wrap_content"
             android:textSize="10sp"
             android:id="@+id/current_name"
+            android:textColor="@color/colorAccent"
             android:text=""
             android:layout_alignParentLeft="false"
             android:layout_centerHorizontal="true"/>

@@ -10,7 +10,7 @@ android {
         }
     }
     compileSdkVersion 24
-    buildToolsVersion "24.0.1"
+    buildToolsVersion "24.0.2"
     defaultConfig {
         applicationId "com.zome.android.webspidola"
         minSdkVersion 15
@@ -28,6 +28,7 @@ android {
 }
 repositories {
     maven { url "https://jitpack.io" }
+    mavenCentral()
 }
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
@@ -40,4 +41,7 @@ dependencies {
     compile 'com.google.android.gms:play-services-appindexing:9.4.0'
     compile 'com.github.lzyzsd:jsbridge:1.0.4'
     compile 'com.android.support:recyclerview-v7:24.2.0'
+    compile 'com.google.android.gms:play-services-ads:9.4.0'
+    compile 'com.google.gms:google-services:3.0.0'
 }
+apply plugin: 'com.google.gms.google-services'

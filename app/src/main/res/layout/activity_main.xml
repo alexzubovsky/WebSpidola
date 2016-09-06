@@ -3,37 +3,47 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:ads="http://schemas.android.com/apk/res-auto"
     android:id="@+id/main_content"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
+    style="@style/AppTheme.AllFrames"
     tools:context="com.zome.android.webspidola.MainTabbedActivity">
-
     <android.support.design.widget.AppBarLayout
         android:id="@+id/appbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingTop="2dp"
         android:theme="@style/AppTheme.AppBarOverlay"><!--
+        android:paddingTop="2dp"
         android:paddingTop="@dimen/appbar_padding_top"-->
 
+        <!--android.support.v7.widget.RecyclerView
+            android:id="@+id/rvToDoList"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        </android.support.v7.widget.RecyclerView-->
         <android.support.v7.widget.Toolbar
-            android:id="@+id/toolbar"
+            android:id="@+id/main_tabbed_toolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="?attr/colorPrimary"
             app:layout_scrollFlags="scroll|enterAlways"
-            app:popupTheme="@style/AppTheme.PopupOverlay"/><!-- ?attr/actionBarSize -->
+            app:popupTheme="@style/AppTheme.PopupOverlay"/><!-- ?attr/actionBarSize
+            app:layout_scrollFlags="scroll|enterAlways" -->
         <android.support.design.widget.TabLayout
             app:layout_scrollFlags="scroll|enterAlways"
             android:layout_height="wrap_content"
             android:layout_width="match_parent"
             android:overScrollMode="always"
             android:scrollbars="horizontal"
-            android:id="@+id/tabContainer"
+            android:id="@+id/mainTabsBar"
             android:textAllCaps="false"
             app:tabMode="scrollable"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior">
+            app:layout_behavior="@string/appbar_scrolling_view_behavior"
+            android:fillViewport="false">
             <android.support.design.widget.TabItem
                 android:layout_height="wrap_content"
                 android:layout_width="0dp"
@@ -59,30 +69,33 @@
                 android:text="Tab 4"
                 android:textAllCaps="false"/>
         </android.support.design.widget.TabLayout>
-    </android.support.design.widget.AppBarLayout>
+     </android.support.design.widget.AppBarLayout>
 
     <android.support.v4.view.ViewPager
-        android:id="@+id/container"
+        android:id="@+id/main_tabbed_container"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="?attr/actionBarSize"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
         <!--blue shine at the "end" of ViewPage
          android:overScrollMode="never"
+        android:paddingBottom="?attr/actionBarSize"
+        android:layout_marginBottom="2dp"
          -->
-
-
-    <!--android.support.design.widget.FloatingActionButton
-        android:id="@+id/fab"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="end|bottom"
-        android:layout_margin="@dimen/fab_margin"
-        android:src="@android:drawable/ic_dialog_email"/-->
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab_play_pause"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
-        android:layout_margin="@dimen/fab_margin"/>
-
+        android:layout_marginRight="@dimen/fab_margin"
+        android:layout_marginBottom="48dp"/>
+    <com.google.android.gms.ads.AdView
+        android:id="@+id/ad_mob_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        android:layout_gravity="bottom|end"
+        ads:adSize="BANNER"
+        ads:adUnitId="@string/banner_ad_unit_id"/>
 </android.support.design.widget.CoordinatorLayout>

@@ -33,7 +33,6 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.zome.android.webspidola.R;
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -206,7 +205,7 @@ public class SearchForStationsFrame extends android.support.v4.app.Fragment{//Ap
 		//mExistedStations=
 		ArrayList<String[]> existed = FavoriteStationsFrame.getStationsListFromPreferences();
 		for(String[] definition : existed)
-			mExistedStations.put(definition[1], definition[0]);
+			mExistedStations.put(definition[MediaPlayerService.DEF_POS_URL], definition[MediaPlayerService.DEF_POS_LABEL]);
 
 		final WebView myWebView = (WebView) mFragmentRootView.findViewById(R.id.webview);
 		myWebView.setWebViewClient(new WebViewClient() {
@@ -960,6 +959,8 @@ public class SearchForStationsFrame extends android.support.v4.app.Fragment{//Ap
 	@Override
 	public void onDestroy(){
 		//unBindMPService();
+		if(mProgressIndicator != null && mProgressIndicator.isShowing())
+			mProgressIndicator.dismiss();
 		super.onDestroy();
 	}
 	/*
