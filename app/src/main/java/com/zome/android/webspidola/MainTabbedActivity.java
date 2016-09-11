@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.os.Build;
@@ -19,6 +20,7 @@ import android.os.IBinder;
 import android.os.PersistableBundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
@@ -30,6 +32,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.Display;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -44,12 +47,13 @@ import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
 
 import java.io.File;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 //import android.support.v4.view.ViewPager;
 
-public class MainTabbedActivity extends AppCompatActivity implements View.OnTouchListener{//} implements ManageRecordingsFrame.OnListFragmentInteractionListener{
+public class MainTabbedActivity extends AppCompatActivity /*implements View.OnTouchListener*/{//} implements ManageRecordingsFrame.OnListFragmentInteractionListener{
 
 	public static final int FAVORITE_STATIONS = 0;
 	public static final int MANAGE_RECORDINGS = 1;
@@ -78,6 +82,7 @@ public class MainTabbedActivity extends AppCompatActivity implements View.OnTouc
 	public static final String ARG_SECTION_NUMBER = "section_number";
 	private static boolean mExitDeclared =false;
 	private static Activity mThisActivity;
+	private static MainTabbedActivity mThisInstance;
 
 	public static void setSelectedStation(View view) {
 		if(view instanceof Button)
@@ -183,6 +188,7 @@ public class MainTabbedActivity extends AppCompatActivity implements View.OnTouc
 		mContext = getApplicationContext();
 		mResources = getResources();
 		mPreferences = PreferenceManager.getDefaultSharedPreferences(this);//this.getPreferences(Context.MODE_PRIVATE);
+		mThisInstance = this;
 		if(mExitDeclared) {
 			if(savedInstanceState != null) {
 				exitApp();
@@ -197,7 +203,8 @@ public class MainTabbedActivity extends AppCompatActivity implements View.OnTouc
 		checkPermissionsOnInitialization();
 		this.setContentView(R.layout.activity_main);
 
-		Toolbar toolbar = (Toolbar) findViewById(R.id.main_tabbed_toolbar);
+		Toolbar toolbar = (Toolbar) findViewById(MediaPlayerService.topPositionOfPlayPause? R.id.main_tabbed_toolbar_top : R.id.main_tabbed_toolbar_bottom);
+		toolbar.setVisibility(View.VISIBLE);
 		setSupportActionBar(toolbar);
 		// Create the adapter that will return a fragment for each of the three
 		// primary sections of the activity.
@@ -236,8 +243,8 @@ public class MainTabbedActivity extends AppCompatActivity implements View.OnTouc
 		mViewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
 		tabLayout.setupWithViewPager(mViewPager);
 		///////////////////
-
-		floatingActionButton = (FloatingActionButton)findViewById(R.id.fab_play_pause);
+		floatingActionButton = (FloatingActionButton)findViewById(MediaPlayerService.topPositionOfPlayPause? R.id.fab_play_pause_top: R.id.fab_play_pause_bottom);
+		floatingActionButton.setVisibility(View.VISIBLE);
 		floatingActionButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
@@ -254,7 +261,7 @@ public class MainTabbedActivity extends AppCompatActivity implements View.OnTouc
 
 		Log.e("MTA:onCreate1:",(savedInstanceState!=null?savedInstanceState.getClass().getSimpleName():""));
 	}
-	private static final boolean adMobShallBeShown = false;
+	private static final boolean adMobShallBeShown = true;
 	private void setUpAdMob(){
 		int adMobCorrection = 0;
 		float coeff = 0.98f;
@@ -291,17 +298,18 @@ public class MainTabbedActivity extends AppCompatActivity implements View.OnTouc
 	};*/
 	private static Float previousX = null;
 	private static Float previousY = null;
-	@Override
+	/*@Override
 	public boolean onTouch(View view, MotionEvent motionEvent) {
 		return onTouchImplementation(view, motionEvent);
 	}
-
+	*/
 	public static View.OnTouchListener onTouchListener = new View.OnTouchListener() {
 		@Override
 		public boolean onTouch(View view, MotionEvent motionEvent) {
 			return onTouchImplementation(view, motionEvent);
 		}
 	};
+
 	private static boolean onTouchImplementation(View view, MotionEvent motionEvent) {
 		Log.e("onTouch", view.getClass().getSimpleName() + "," + motionEvent.getAction());
 		if (view instanceof FloatingActionButton) {
@@ -309,18 +317,25 @@ public class MainTabbedActivity extends AppCompatActivity implements View.OnTouc
 			switch (motionEvent.getAction()) {
 				case MotionEvent.ACTION_MOVE:
 					if (previousX != null && previousY != null) {
-						//fab.animate().translationYBy(previousY - motionEvent.getY()).translationXBy(previousX - motionEvent.getX());
-						Log.e("onTouch", view.getClass().getSimpleName() + ",X:" + (previousX - motionEvent.getX())+ ",Y:"+(previousY - motionEvent.getY()));
+						//fab.animate().translationYBy(previousY - motionEvent.getRawY()).translationXBy(previousX - motionEvent.getRawX());
+						Log.e("onMove", view.getClass().getSimpleName() + ",X:" + (previousX - motionEvent.getRawX())+ ",Y:"+(previousY - motionEvent.getRawY()));
 					}//else
 						break;
 				case MotionEvent.ACTION_DOWN:
-					previousY = motionEvent.getY();
-					previousX = motionEvent.getX();
+					previousY = motionEvent.getRawY();
+					previousX = motionEvent.getRawX();
+					CoordinatorLayout mParent = (CoordinatorLayout) fab.getParent();
+					if (mParent != null) {
+						mParent.requestDisallowInterceptTouchEvent(true);
+					}
+					break;
+				case MotionEvent.ACTION_OUTSIDE:
+				case MotionEvent.ACTION_CANCEL:
 					break;
 				case MotionEvent.ACTION_UP:
 					if (previousX != null && previousY != null) {
-						fab.animate().translationYBy(motionEvent.getY()- previousY).translationXBy(motionEvent.getX()- previousX );
-						Log.e("onUp", view.getClass().getSimpleName() + ",X:" + (motionEvent.getX()- previousX)+ ",Y:"+(motionEvent.getY()- previousY));
+						fab.animate().translationYBy(motionEvent.getRawY()- previousY).translationXBy(motionEvent.getRawX()- previousX );
+						Log.e("onUp", view.getClass().getSimpleName() + ",X:" + (motionEvent.getRawX())+ ",Y:"+(motionEvent.getRawY()));
 					}
 					previousY = null;
 					previousX = null;
@@ -465,7 +480,7 @@ public class MainTabbedActivity extends AppCompatActivity implements View.OnTouc
 					return false;
 			}
 
-			ed.commit();
+			ed.apply();
 			if (mViewPager.getCurrentItem() == MANAGE_RECORDINGS)
 				((ManageRecordingsFrame) mSectionsPagerAdapter.getItem(MANAGE_RECORDINGS)).initRecordedStationsView();
 			return false;
@@ -482,9 +497,9 @@ public class MainTabbedActivity extends AppCompatActivity implements View.OnTouc
 		switch (id) {
 			case R.id.action_info:
 				if(mBound) {
-					StringBuffer message = new StringBuffer();
+					StringBuffer message = new StringBuffer(getVersionInfo());
 					message.append(mService.getConnectivityStatus().toString());
-					MediaPlayerService.showMessageInPopup(message, Toast.LENGTH_LONG * 10, true);
+					MediaPlayerService.showMessageInPopup(message, Toast.LENGTH_LONG * 50, false);
 				}
 				return true;
 			case R.id.action_settings:
@@ -506,6 +521,8 @@ public class MainTabbedActivity extends AppCompatActivity implements View.OnTouc
 				startActivity(intent);
 				return true;*/
 			case android.R.id.home:
+				if(mViewPager.getCurrentItem() == SEARCH_FOR_STATIONS)
+					break;
 			case R.id.action_exit:
 				Handler delayedPost = new Handler();
 				delayedPost.postDelayed(new Runnable() {
@@ -523,6 +540,20 @@ public class MainTabbedActivity extends AppCompatActivity implements View.OnTouc
 		}
 
 		return super.onOptionsItemSelected(item);
+	}
+
+	private String getVersionInfo() {
+		String versionName = "";
+		Context context = getApplicationContext();
+		final PackageManager packageManager = context.getPackageManager();
+		if (packageManager != null) {
+			try {
+				PackageInfo packageInfo = packageManager.getPackageInfo(context.getPackageName(), 0);
+				versionName = "Version:"+packageInfo.versionName+"\nUpdated:" +new Date(packageInfo.lastUpdateTime).toString();
+			} catch (PackageManager.NameNotFoundException e) {
+			}
+		}
+		return versionName;
 	}
 
 	@Override
@@ -568,7 +599,6 @@ public class MainTabbedActivity extends AppCompatActivity implements View.OnTouc
 	public void onResume() {
 		super.onResume();
 		reReadSettings();
-
 		Log.e("MTA:onResume:","");
 		//bindMPService();
 		/*
@@ -586,6 +616,12 @@ public class MainTabbedActivity extends AppCompatActivity implements View.OnTouc
 	};
 	*/
 
+	private static android.util.DisplayMetrics getScreenMetrics(){
+		Display display = mThisActivity.getWindowManager().getDefaultDisplay();
+		android.util.DisplayMetrics metrics = new android.util.DisplayMetrics();
+		display.getMetrics(metrics);
+		return metrics;
+	}
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
@@ -752,7 +788,7 @@ public class MainTabbedActivity extends AppCompatActivity implements View.OnTouc
 		if(!exists) {
 			SharedPreferences.Editor ed = mPreferences.edit();
 			ed.putString(preferenceName, String.valueOf(savedValue));
-			ed.commit();
+			ed.apply();
 		}
 		return savedValue;
 	}
@@ -762,7 +798,7 @@ public class MainTabbedActivity extends AppCompatActivity implements View.OnTouc
 		if(!exists) {
 			SharedPreferences.Editor ed = mPreferences.edit();
 			ed.putBoolean(preferenceName, savedValue);
-			ed.commit();
+			ed.apply();
 		}
 		return savedValue;
 	}
@@ -800,15 +836,13 @@ public class MainTabbedActivity extends AppCompatActivity implements View.OnTouc
 	public static void saveSelectedStationToPreferences(MediaPlayerService.PlayingInfo currentPlayingStationDef) {
 		SharedPreferences.Editor ed = mPreferences.edit();
 		ed.putString(MediaPlayerService.SELECTED_STATION_DEFINITION, currentPlayingStationDef.serialize());
-		ed.commit();
+		ed.apply();
 	}
 	public static MediaPlayerService.PlayingInfo getSavedStationDefinition(Bundle savedInstanceState){
-		MediaPlayerService.PlayingInfo prefDef = new MediaPlayerService.PlayingInfo(mPreferences.getString(MediaPlayerService.SELECTED_STATION_DEFINITION, null));
-		if(!prefDef.isValid())
-			prefDef = null;
+		MediaPlayerService.PlayingInfo prefDef = MediaPlayerService.PlayingInfo.getInstance(mPreferences.getString(MediaPlayerService.SELECTED_STATION_DEFINITION, null));
 		if(savedInstanceState!= null)
 		{
-			MediaPlayerService.PlayingInfo instanceDef = new MediaPlayerService.PlayingInfo(savedInstanceState.getStringArray(MediaPlayerService.SELECTED_STATION_DEFINITION));
+			MediaPlayerService.PlayingInfo instanceDef = MediaPlayerService.PlayingInfo.getInstance(savedInstanceState.getStringArray(MediaPlayerService.SELECTED_STATION_DEFINITION));
 			String	prefStation = prefDef!= null ? prefDef.uri : null;
 			if(instanceDef != null && prefStation != null && !prefStation.equals(instanceDef.uri)) {
 				saveSelectedStationToPreferences(prefDef = instanceDef);				;
@@ -845,6 +879,7 @@ public class MainTabbedActivity extends AppCompatActivity implements View.OnTouc
 		final String AUDIOLEVEL_MONITOR = mResources.getString(R.string.audiolevel_switch);
 		final String THEME = mResources.getString(R.string.themes_list);
 		final String ROOT_DIRECTORY_FOR_RECORDINGS = mContext.getString(R.string.root_directory_for_recordings);
+		final String TOP_POSITION_PAUSE_BUTTON = mContext.getString(R.string.TOP_POSITION_PAUSE_BUTTON);
 		MediaPlayerService.mPrefFontSizeForSearch = getIntegerPreference(FONT_SIZE_FOR_SEARCH, 11);
 		MediaPlayerService.mPrefFontSize = getIntegerPreference(FONT_SIZE, 11);//preferences.getInt(FONT_SIZE, 11);
 		MediaPlayerService.mPrefPaddingTop = getIntegerPreference(PADDING_TOP, 5);//preferences.getInt(PADDING_TOP, 20);
@@ -857,9 +892,11 @@ public class MainTabbedActivity extends AppCompatActivity implements View.OnTouc
 		MediaPlayerService.mTheme = Integer.parseInt(mPreferences.getString(THEME, "0"));
 		MediaPlayerService.mRootDirectoryForRecordings = mPreferences.getString(ROOT_DIRECTORY_FOR_RECORDINGS, MediaPlayerService.mRootDirectoryForRecordings);
 		MediaPlayerService.mRecordsSortAscending = getBooleanPreference(RECORDS_SORT_ASCENDING, false);
+		MediaPlayerService.topPositionOfPlayPause = getIntegerPreference(TOP_POSITION_PAUSE_BUTTON, 1) == 0;
 		if(!ignoreForFirstRun)
 			setCurrentTheme(MediaPlayerService.mTheme);
 	}
+
 
 	private static void setCurrentTheme(int themeId) {
 		changeToTheme(mThisActivity,themeId);

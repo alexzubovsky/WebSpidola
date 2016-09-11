@@ -48,7 +48,7 @@
     <!-- Strings related to Settings -->
 
     <!-- Example General settings -->
-    <string name="pref_header_general">Automation</string>
+    <string name="pref_header_general">Automation and Monitoring</string>
 
     <string name="pref_title_headphone_monitoring">Headphones monitoring</string>
     <string name="pref_description_headphone_monitoring">If enabled then playing will be paused when headphones disconnected
@@ -64,7 +64,7 @@
     <string name="pref_title_display_name">Display name</string>
     <string name="pref_default_display_name">John Smith</string>
 
-    <string name="pref_title_add_friends_to_messages">Theme</string>
+    <string name="pref_themes_list_title">Theme</string>
     <string-array name="pref_themes_list_titles">
         <item>Dark</item>
         <item>Medium Dark</item>
@@ -74,6 +74,15 @@
         <item>0</item>
         <item>1</item>
         <item>2</item>
+    </string-array>
+    <string name="pref_fab_position_title">Position of Play/Pause button</string>
+    <string-array name="pref_fab_position_list_titles">
+        <item>Top</item>
+        <item>Bottom</item>
+    </string-array>
+    <string-array name="pref_fab_position_list_values">
+        <item>0</item>
+        <item>1</item>
     </string-array>
 
     <!-- Example settings for Data & Sync -->
@@ -240,5 +249,36 @@ res=(s1.join(delim1) + delim2 + s2.join(delim1))
 
     <!--string name="title_activity_main_tabbed">MainTabbedActivity</string-->
     <!--string name="section_format">Hello World from section: %1$d</string-->
-    <string name="banner_ad_unit_id">ca-app-pub-3940256099942544/6300978111</string><!--ca-app-pub-5265061023469633/9916779909-->
+    <!--<string name="banner_ad_unit_id">ca-app-pub-3940256099942544/6300978111--><!-- test -->
+    <string name="banner_ad_unit_id">ca-app-pub-5265061023469633/9916779909</string>!-- real -->
+
+    <string name="help_favorites_text">
+       Click Pause button (on very bottom) for temporary stopping. It will change to Play button to resume playing.\n
+        Touching another station name will start playing it.\nSliding page to left or right will change tab in the same way as selecting tab label.\n
+        Touching 3 vertical dots will open settings menu.</string>
+    <string name="help_favorites_text_2">
+        Long touching station name will show Record button. Touching Record will start it and replace button by Pause and Stop buttons.</string>
+    <string name="help_settings_3_text">
+        Length of the recorded file. One megabyte is about 1 minute for 128 kBit per second bitrate.</string>
+    <string name="help_settings_2_text">
+        Themes and font sizes</string>
+    <string name="help_settings_1_text">
+        Various settings to monitor starting, connecting/disconnecting headphones etc.</string>
+    <string name="help_settings_text">
+        Settings menu allows to change preferences for the monitoring of the changing device\'s condition, look and feel and recording settings.</string>
+    <string name="help_manage_text">Un-checking station name will delete station from Favorites. When un-checking and re-positioning finished, touch Save button (floppy disk image).\n
+        If Play/Pause or save button obscure repositioning controls then touch the button and slide finger to the other place on screen, then put finger away. Button well change its place</string>
+    <string name="help_search_text">
+        Use search string if you know full or partial name of the station.\nOtherwise use predefined categories to search by language, genre or country.\n
+        Unfortunately not all stations available elsewhere could be found.\n
+        Touching station name (if search or category selection produce result) will start playing and add station to the Favorites.\n
+        If adding to Favorites is not desirable (wrong station or no playing started), then long touch will open dialog to exclude adding to Favorites.\n
+        Another touch of the station that is already in the list will open dialog asking if you want to have duplicates in the Favorites.</string>
+    <string name="help_recordings_text">
+        Recordings categorized by their station name. Touching station name will open list of saved recordings.\n
+        Touching recording name starts batch playing. That is indicated by the sliders. Top one allows to go back and forth by the batch list. Bottom slider allows to change position of the playing.\n
+        Long touch of the recording name opens Delete dialog for that recording. Long touch of station\'s title will open dialog to delete all recordings for it.</string>
+    <string name="help_favorites_text_3">
+        Another way to delete station from Favorites is to long touch between left edge and center of radio button image</string>
+    <string name="TOP_POSITION_PAUSE_BUTTON">TOP_POSITION_PAUSE_BUTTON</string>
 </resources>

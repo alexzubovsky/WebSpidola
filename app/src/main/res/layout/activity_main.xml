@@ -26,13 +26,23 @@
 
         </android.support.v7.widget.RecyclerView-->
         <android.support.v7.widget.Toolbar
-            android:id="@+id/main_tabbed_toolbar"
+            android:id="@+id/main_tabbed_toolbar_top"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="?attr/colorPrimary"
             app:layout_scrollFlags="scroll|enterAlways"
-            app:popupTheme="@style/AppTheme.PopupOverlay"/><!-- ?attr/actionBarSize
+            app:popupTheme="@style/AppTheme.PopupOverlay"
+            android:visibility="gone"
+            android:layout_marginLeft="56dp"/><!-- ?attr/actionBarSize
             app:layout_scrollFlags="scroll|enterAlways" -->
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/main_tabbed_toolbar_bottom"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?attr/colorPrimary"
+            app:layout_scrollFlags="scroll|enterAlways"
+            android:visibility="gone"
+            app:popupTheme="@style/AppTheme.PopupOverlay"/>
         <android.support.design.widget.TabLayout
             app:layout_scrollFlags="scroll|enterAlways"
             android:layout_height="wrap_content"
@@ -83,11 +93,20 @@
         android:layout_marginBottom="2dp"
          -->
     <android.support.design.widget.FloatingActionButton
-        android:id="@+id/fab_play_pause"
+        android:id="@+id/fab_play_pause_top"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
+        android:layout_gravity="top|left"
+        android:visibility="invisible"
+        android:layout_marginLeft="4dp"
+        android:layout_marginTop="2dp"/>
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fab_play_pause_bottom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|right"
         android:layout_marginRight="@dimen/fab_margin"
+        android:visibility="invisible"
         android:layout_marginBottom="48dp"/>
     <com.google.android.gms.ads.AdView
         android:id="@+id/ad_mob_view"

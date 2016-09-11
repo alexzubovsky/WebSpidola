@@ -23,6 +23,7 @@ public class ManageFavoriteStationsFrame extends Fragment{
 	private static ViewGroup mFragmentContainer;
 	private static Bundle mFragmentSavedInstanceState;
 	private static View mFragmentRootView;
+	private FloatingActionButton fab = null;
 
 	public ManageFavoriteStationsFrame() {
 	}
@@ -47,7 +48,8 @@ public class ManageFavoriteStationsFrame extends Fragment{
 		Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 		setSupportActionBar(toolbar);
 */
-		FloatingActionButton fab = (FloatingActionButton) mFragmentRootView.findViewById(R.id.fab_edit);
+		fab = (FloatingActionButton) mFragmentRootView.findViewById(MediaPlayerService.topPositionOfPlayPause? R.id.fab_save_favorites_bottom : R.id.fab_save_favorites_top);
+		fab.setVisibility(View.VISIBLE);
 		fab.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
@@ -58,10 +60,18 @@ public class ManageFavoriteStationsFrame extends Fragment{
 		});
 		fab.setOnTouchListener(MainTabbedActivity.onTouchListener);
 		//getActivity().getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-		ArrayList<String[]> stationsList = FavoriteStationsFrame.deSerializeStationsList(FavoriteStationsFrame.preferences.getString(FavoriteStationsFrame.PREFERENCE_LIST_OF_STATIONS, null));
+		ArrayList<String[]> stationsList = FavoriteStationsFrame.deSerializeStationsList(MainTabbedActivity.mPreferences.getString(FavoriteStationsFrame.PREFERENCE_LIST_OF_STATIONS, null));
 		initializeStationsList(stationsList);
+		//MainTabbedActivity.restoreFABPosition(fab);
 		return mFragmentRootView;
 	}
+	@Override
+	public void setUserVisibleHint(boolean isVisibleToUser) {
+		super.setUserVisibleHint(isVisibleToUser);
+		if (isVisibleToUser) {
+		}
+	}
+
 	private void finishListEdit(){
 		LinearLayout list = (LinearLayout) mFragmentRootView.findViewById(R.id.scrollViewForStations);
 		ArrayList<String[]> stationsDefinition = new ArrayList<>();

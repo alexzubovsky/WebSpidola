@@ -45,6 +45,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -223,7 +224,7 @@ public class SearchForStationsFrame extends android.support.v4.app.Fragment{//Ap
 				else if(url.substring(0,url.length()-1).toLowerCase().endsWith(".mp")){
 					myWebView.goBack();
 				}else {
-					String url2 = FavoriteStationsFrame.preferences.getString(FavoriteStationsFrame.PREFERENCE_BEFORE_LAST_SEARCH_URL, STARTING_URL);
+					String url2 = MainTabbedActivity.mPreferences.getString(FavoriteStationsFrame.PREFERENCE_BEFORE_LAST_SEARCH_URL, STARTING_URL);
 					String url1 = getUrlFromPreferences();
 					if(!url.equals(url1) && !url.equals(STARTING_URL) && notDownloadingUrl(url)) {
 						String[] s1={FavoriteStationsFrame.PREFERENCE_BEFORE_LAST_SEARCH_URL, url1};
@@ -277,11 +278,14 @@ public class SearchForStationsFrame extends android.support.v4.app.Fragment{//Ap
 		);
 		*/
 		/* WebViewClient must be set BEFORE calling loadUrl! */
-		if(savedInstanceState == null)
+		boolean mediaDataOK = isMediaPlayerServiceDataReady();
+		if(savedInstanceState == null && !mediaDataOK)
 			goToUrl(getUrlFromPreferences());
 		else{
-			restorePageContent(savedInstanceState);
-			setOverPage(mStationForRestore, mNavigationsForRestore);
+			if(savedInstanceState != null && !mediaDataOK)
+				restorePageContent(savedInstanceState);
+			SetSearchTextValue(MediaPlayerService.mSearchInputText);
+			setOverPage(MediaPlayerService.mStationForRestore, MediaPlayerService.mNavigationsForRestore);
 		}
 		myWebView.setDownloadListener(new DownloadListener() {
 			@Override
@@ -326,14 +330,17 @@ public class SearchForStationsFrame extends android.support.v4.app.Fragment{//Ap
 		});
 		return  mFragmentRootView;
 	}
+	private boolean isMediaPlayerServiceDataReady(){
+		return MediaPlayerService.mStationForRestore != null && MediaPlayerService.mNavigationsForRestore != null && MediaPlayerService.mNavigationsForRestore.size()>0;
+	}
 	private String getUrlFromPreferences (){
-		return correctDownloadingUrl(FavoriteStationsFrame.preferences.getString(FavoriteStationsFrame.PREFERENCE_LAST_SEARCH_URL, STARTING_URL));
+		return correctDownloadingUrl(MainTabbedActivity.mPreferences.getString(FavoriteStationsFrame.PREFERENCE_LAST_SEARCH_URL, STARTING_URL));
 	}
 	private void putStartingUrl(String[][] arrays) {
-		SharedPreferences.Editor edit = FavoriteStationsFrame.preferences.edit();
+		SharedPreferences.Editor edit = MainTabbedActivity.mPreferences.edit();
 		for(int i=0;arrays.length>i;i++)
 			edit.putString(arrays[i][0], arrays[i][1]);
-		edit.commit();
+		edit.apply();
 	}
 
 	private String correctDownloadingUrl(String url) {
@@ -341,7 +348,7 @@ public class SearchForStationsFrame extends android.support.v4.app.Fragment{//Ap
 	}
 
 	private boolean notDownloadingUrl(String url) {
-		return !url.contains("?link=1&id=");
+		return !(url.contains("?link=1&id=") || url.endsWith("m3u"));
 	}
 
 	private String extractUrl(WebResourceRequest request) {
@@ -365,13 +372,16 @@ public class SearchForStationsFrame extends android.support.v4.app.Fragment{//Ap
 	private static final String delim0 ="__aaa__aaa__";
 	private static final String delim1 ="__bbb__bbb__";
 	private static final String delim2 ="__ccc__ccc__";
-	private ArrayList<String[]> deserializeJS(String src){
+	private ArrayList<String[]> deserializeJS(String src, Integer minLength){
 		ArrayList<String[]> res = new ArrayList<String[]>();
 		if(!src.isEmpty()) {
-			String[] split = src.split(delim1), splitTemp;
+			String[] temp, split = src.split(delim1);
 			for (int j = 0; split.length > j; j++) {
-				if(!split[j].isEmpty())
-					res.add(split[j].split(delim0));
+				if(!split[j].isEmpty()) {
+					temp = split[j].split(delim0);
+					if(minLength == null || temp.length >= minLength)
+						res.add(temp);
+				}
 			}
 		}
 		return res;
@@ -392,30 +402,35 @@ public class SearchForStationsFrame extends android.support.v4.app.Fragment{//Ap
 	private void processResultHtml(String html){
 		if(html == null)
 			html = "'empty'";
-		else {
-			if(html.length()>2) {
-				mHashMapOfAnchors = new HashMap<>();
-				String str = cleareUnicodes(html.substring(1, html.length() - 1));
-				String[] split = str.split(delim2);
-				if(split.length < 2 || split[1].split(delim1).length == 1) {
-					putStartingUrl(reSetPrefLastUrl);/*
+		else if (html.length() > 2) {
+			mHashMapOfAnchors = new HashMap<>();
+			String str = cleareUnicodes(html.substring(1, html.length() - 1));
+			String[] split = str.split(delim2);
+			if (split.length < 2 || split[1].split(delim1).length == 1) {
+				putStartingUrl(reSetPrefLastUrl);/*
 					WebView myWebView = (WebView) findViewById(R.id.webview);
 					myWebView.loadUrl(STARTING_URL);*/
-					Log.e("VT:error", html);
-				}
-				else {
-					ArrayList<String[]> a = deserializeJS(split[1]);
-					int linkCount = setOverPage(deserializeJS(split[0]), a);
-					//Log.e("VT:OK", printArrayList(a));
-					if(linkCount == 0)
-						putStartingUrl(reSetPrefLastUrl);
-				}
+				Log.e("VT:error", html);
+			} else {
+				ArrayList<String[]> stations = deserializeJS(split[0], null);
+				ArrayList<String[]> buttons = deserializeJS(split[1],2);
+				if(buttons.size()>0)
+					Collections.sort(buttons, stringArrayComparator);
+				int linkCount = setOverPage(stations, buttons);
+				//Log.e("VT:OK", printArrayList(a));
+				if (linkCount == 0)
+					putStartingUrl(reSetPrefLastUrl);
 			}
 		}
 		//Log.e("WebSpidola:JavaScript", html.replace("_|_|_", "\n"));
 	}
 	private static final String[][] reSetPrefLastUrl ={{FavoriteStationsFrame.PREFERENCE_LAST_SEARCH_URL, STARTING_URL}};
-
+	private Comparator<String[]> stringArrayComparator = new Comparator<String[]>() {
+		@Override
+		public int compare(String[] s1, String[] s2) {
+			return s1[1].compareTo(s2[1]);
+		}
+	};
 	private String printArrayList(ArrayList<String[]> a) {
 		int length = a.size();
 		String[] b;
@@ -458,8 +473,8 @@ public class SearchForStationsFrame extends android.support.v4.app.Fragment{//Ap
 		goToUrl(SEARCH_URL+search.getText().toString());
 	}
 	private int setOverPage(ArrayList<String[]> strings, ArrayList<String[]> strings1) {
-		mStationForRestore = new ArrayList<>();
-		mNavigationsForRestore = new ArrayList<>();
+		MediaPlayerService.mStationForRestore = new ArrayList<>();
+		MediaPlayerService.mNavigationsForRestore = new ArrayList<>();
 		int linksCount = 0, length;
 		String[] definition, defCopy;
 		HashMap<String,String> existingAnchors = new HashMap<>();
@@ -497,7 +512,7 @@ public class SearchForStationsFrame extends android.support.v4.app.Fragment{//Ap
 						e.printStackTrace();
 					}
 				}
-				mStationForRestore.add(defCopy);
+				MediaPlayerService.mStationForRestore.add(defCopy);
 				linksCount++;
 			}
 		}
@@ -530,7 +545,7 @@ public class SearchForStationsFrame extends android.support.v4.app.Fragment{//Ap
 					button.setTextSize(TypedValue.COMPLEX_UNIT_PT, MediaPlayerService.mPrefFontSizeForSearch);
 					button.setOnClickListener(initiateLinkLoad);
 					linksCount++;
-					mNavigationsForRestore.add(defCopy);
+					MediaPlayerService.mNavigationsForRestore.add(defCopy);
 				}else
 					button.setVisibility(View.GONE);
 				if(j < inRow - 2)
@@ -541,8 +556,6 @@ public class SearchForStationsFrame extends android.support.v4.app.Fragment{//Ap
 			mFragmentRootView.findViewById(R.id.stations_anchors_scroller).scrollTo(0,0);
 		return linksCount;
 	}
-	private ArrayList<String[]> mStationForRestore;
-	private ArrayList<String[]> mNavigationsForRestore;
 	private Comparator comparatorForLabels = new Comparator() {
 		@Override
 		public int compare(Object o, Object t1) {
@@ -609,7 +622,11 @@ public class SearchForStationsFrame extends android.support.v4.app.Fragment{//Ap
 		triggerProgressIndicator(true);
 		webView.loadUrl(url);
 		if(url.startsWith(SEARCH_URL))
-			((EditText)mFragmentRootView.findViewById(R.id.sSearchInput)).setText(url.substring(SEARCH_URL.length()));
+			SetSearchTextValue(url.substring(SEARCH_URL.length()));
+	}
+	private void SetSearchTextValue(String string){
+		((EditText)mFragmentRootView.findViewById(R.id.sSearchInput)).setText(MediaPlayerService.mSearchInputText = string);
+
 	}
 	private boolean mProgressIndicatorState = false;
 	private void triggerProgressIndicator() {
@@ -681,6 +698,12 @@ public class SearchForStationsFrame extends android.support.v4.app.Fragment{//Ap
 				mAddedStations.remove(i);
 		}
 	}
+	@Override
+	public void setUserVisibleHint(boolean isVisibleToUser) {
+		super.setUserVisibleHint(isVisibleToUser);
+		if (!isVisibleToUser)
+			setResultAndFinish();
+	}
 	public class MyWebViewClient extends WebView {
 		public MyWebViewClient(Context context) {
 			super(context);
@@ -751,8 +774,10 @@ public class SearchForStationsFrame extends android.support.v4.app.Fragment{//Ap
 		mAddedStations.add(definition.serializeToStringArray());
 		mExistedStations.put(url, mLastAnchorName);
 		disableAddedButton(url);
-		if(MainTabbedActivity.mBound)
+		if(MainTabbedActivity.mBound) {
 			MainTabbedActivity.mService.startPlay(definition);
+			MainTabbedActivity.saveSelectedStationToPreferences(definition);
+		}
 	}
 	private void disableAddedButton(String url){
 		LinearLayout stationsAnchorsGroup = (LinearLayout) mFragmentRootView.findViewById(R.id.stations_anchors_group), row;
@@ -820,8 +845,8 @@ public class SearchForStationsFrame extends android.support.v4.app.Fragment{//Ap
 		restorePageContent(savedInstanceState);
 	}
 	private void restorePageContent(Bundle savedInstanceState) {
-		mStationForRestore = deSerializeDefinitions(savedInstanceState.getStringArrayList(STATIONS_FOR_RESTORE));
-		mNavigationsForRestore = deSerializeDefinitions(savedInstanceState.getStringArrayList(NAVIGATIONS_FOR_RESTORE));
+		MediaPlayerService.mStationForRestore = deSerializeDefinitions(savedInstanceState.getStringArrayList(STATIONS_FOR_RESTORE));
+		MediaPlayerService.mNavigationsForRestore = deSerializeDefinitions(savedInstanceState.getStringArrayList(NAVIGATIONS_FOR_RESTORE));
 
 	}
 	@Override
@@ -835,10 +860,10 @@ public class SearchForStationsFrame extends android.support.v4.app.Fragment{//Ap
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
-		if(mStationForRestore!=null)
-			outState.putStringArrayList(STATIONS_FOR_RESTORE, serializeDefinitions(mStationForRestore));
-		if(mNavigationsForRestore!=null)
-			outState.putStringArrayList(NAVIGATIONS_FOR_RESTORE, serializeDefinitions(mNavigationsForRestore));
+		if(MediaPlayerService.mStationForRestore!=null)
+			outState.putStringArrayList(STATIONS_FOR_RESTORE, serializeDefinitions(MediaPlayerService.mStationForRestore));
+		if(MediaPlayerService.mNavigationsForRestore!=null)
+			outState.putStringArrayList(NAVIGATIONS_FOR_RESTORE, serializeDefinitions(MediaPlayerService.mNavigationsForRestore));
 	}
 	private ArrayList<String> serializeDefinitions(ArrayList<String[]> in){
 		ArrayList<String> out = new ArrayList<String>();

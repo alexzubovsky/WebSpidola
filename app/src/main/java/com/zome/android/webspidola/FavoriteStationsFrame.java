@@ -10,7 +10,6 @@ import android.content.SharedPreferences;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
@@ -19,6 +18,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -55,13 +55,10 @@ public class FavoriteStationsFrame extends Fragment {//AppCompatActivity {
 	 * that represents each of the possible media buttons, such as KEYCODE_MEDIA_PLAY_PAUSE and KEYCODE_MEDIA_NEXT
 	 */
 	RemoteControlReceiver rcr = new RemoteControlReceiver();//see http://developer.android.com/training/managing-audio/volume-playback.html
-	private View selectedStation = null;
+	private View selectedRadioStation = null;
 
 	private static final boolean ACTION_STOP = true;
 	public static final boolean ACTION_PLAY = false;
-	//private MediaPlayerService mService;
-	////private boolean mBound = false;
-	//private String selectedStationTagOnResume = null;
 
 	private ArrayList<Integer> mRadioButtonIds;
 	private float mTouchEventX = -1.0f;
@@ -85,7 +82,7 @@ public class FavoriteStationsFrame extends Fragment {//AppCompatActivity {
 	//@Override
 	public void onRestoreInstanceState(Bundle savedInstanceState) {
 		//super.onRestoreInstanceState(savedInstanceState);
-		if(selectedStation == null) {
+		if(selectedRadioStation == null) {
 			selectedStationTagOnResume = (String) savedInstanceState.getSerializable(MediaPlayerService.SELECTED_STATION_DEFINITION);
 		}
 	}
@@ -94,13 +91,10 @@ public class FavoriteStationsFrame extends Fragment {//AppCompatActivity {
 	public void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
 		//selectedStationTagOnResume = null;
-		;
-		if(selectedStation!=null)
-			outState.putStringArray(MediaPlayerService.SELECTED_STATION_DEFINITION, (new MediaPlayerService.PlayingInfo((RadioButton)selectedStation)).serializeToStringArray());//MediaPlayerService.serializeSelectedStation((RadioButton)selectedStation));
-		//outState.putInt(FONT_SIZE, prefFontSize);
-		//outState.putInt(PADDING_TOP, prefPaddingTop);
+		if(selectedRadioStation !=null)
+			outState.putStringArray(MediaPlayerService.SELECTED_STATION_DEFINITION, (new MediaPlayerService.PlayingInfo((RadioButton) selectedRadioStation)).serializeToStringArray());//MediaPlayerService.serializeSelectedStation((RadioButton)selectedRadioStation));
 	}
-	public static SharedPreferences preferences;
+	//public static SharedPreferences preferences = null;
 	private static LayoutInflater mFragmentInflater;
 	private static ViewGroup mFragmentContainer;
 	private static Bundle mFragmentSavedInstanceState;
@@ -114,94 +108,112 @@ public class FavoriteStationsFrame extends Fragment {//AppCompatActivity {
 		mFragmentInflater = inflater;
 		mFragmentContainer = container;
 		mFragmentSavedInstanceState =savedInstanceState;
-		preferences = PreferenceManager.getDefaultSharedPreferences(getActivity()/*this*/);//this.getPreferences(Context.MODE_PRIVATE);
+		//preferences = PreferenceManager.getDefaultSharedPreferences(getActivity()/*this*/);//this.getPreferences(Context.MODE_PRIVATE);
 		MainTabbedActivity.reReadSettings();
 		mFragmentRootView = mFragmentInflater.inflate(R.layout.frame_favorite_stations, mFragmentContainer,false);
-	/*setContentView(R.layout.frame_favorite_stations);
-		Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-		setSupportActionBar(toolbar);*/
-/*
-		FloatingActionButton fab = getPlayStopButton();
-		fab.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				doClickOnStopPlayButton((FloatingActionButton) view, ACTION_PLAY);
-			}
-		});
-		*/
+
 		//Context mContext = getApplicationContext();
 		//am = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
 		mSavedStationDefinition = MainTabbedActivity.getSavedStationDefinition(savedInstanceState);
 		initializeStationsList(mSavedStationDefinition);
 		getActivity().startService(new Intent(mFragmentContainer.getContext(), MediaPlayerService.class));//make sure service will not stop until stopService issued
-
-		/*MobileAds.initialize(mFragmentContainer.getContext()/*getApplicationContext()* /, "ca-app-pub-5265061023469633~6963313508");
-		AdView mAdView = (AdView) mFragmentRootView.findViewById(R.id.adView);
-		if(mAdView!=null) {
-			AdRequest adRequest = new AdRequest.Builder().build();
-			mAdView.loadAd(adRequest);
-		}*/
+		RadioGroup stationsRadioGroup = getStationsRadioGroup();
+		stationsRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+			public void onCheckedChanged(RadioGroup group, int checkedId) {
+				View checkedRadio = getActivity().findViewById(checkedId);
+				if (checkedRadio != null)
+					selectStation(checkedRadio);
+			}
+		});
 		return  mFragmentRootView;
 	}
 
+	@Override
+	public void setUserVisibleHint(boolean isVisibleToUser) {
+		super.setUserVisibleHint(isVisibleToUser);
+		if (isVisibleToUser && getActivity()!=null) {
+			if(MainTabbedActivity.mPreferences.getBoolean(FavoriteStationsFrame.PREFERENCE_LIST_OF_STATIONS_CHANGED, false)) {
+				SharedPreferences.Editor prefEditor = MainTabbedActivity.mPreferences.edit();
+				prefEditor.putBoolean(PREFERENCE_LIST_OF_STATIONS_CHANGED, false);
+				prefEditor.apply();
+				ArrayList<String[]> stationDefs = getStationsListFromPreferences();
+				initializeStationsList(stationDefs, null);
+			}
+		}
+	}
 	private void initializeStationsList(MediaPlayerService.PlayingInfo currentPlayingStationDef) {
 		initializeStationsList(getStationsListFromPreferences(), currentPlayingStationDef);
 	}
 
-	private void initializeStationsList(ArrayList<String[]> stationsDefinition, MediaPlayerService.PlayingInfo currentPlayingStationDef) {
-		if(currentPlayingStationDef == null && selectedStation!=null)
-			currentPlayingStationDef = new MediaPlayerService.PlayingInfo((RadioButton)selectedStation);
-		HashMap<String,Integer> runningRecordings = MainTabbedActivity.mBound ? MainTabbedActivity.mService.getRecordingMap():null;
-
-		RadioGroup stationsRadioGroup = getStationsRadioGroup();
-		stationsRadioGroup.removeAllViews();
-		RadioButton button;
-		LinearLayout row;
-		String[] definition;
-		RadioGroup.LayoutParams layoutParams = new RadioGroup.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT, 1.0f);
-		int length = stationsDefinition.size();
-		mRadioButtonIds = new ArrayList<>(length);
-		int paddingLeft = 10;
-		int paddingTop = MediaPlayerService.mPrefPaddingTop;
-		int paddingBottom = new Double(paddingTop*1.5).intValue();
-		int paddingRight = 4;
-		MediaPlayerService.PlayingInfo playingInfo;
-		for (int i = 0; length > i; i++) {
-			definition = stationsDefinition.get(i);
-			/*getLayoutInflater()*/mFragmentInflater.inflate(R.layout.template_radiobutton, stationsRadioGroup);
-			row =(LinearLayout) stationsRadioGroup.getChildAt(stationsRadioGroup.getChildCount()-1);
-			button = (RadioButton) row.getChildAt(POSITION_RADIO);
-			initRadioRowControl(row.getChildAt(POSITION_RECORD));
-			initRadioRowControl(row.getChildAt(POSITION_PAUSE));
-			initRadioRowControl(row.getChildAt(POSITION_STOP));
-			MediaPlayerService.setButtonByDefinition(button, playingInfo = new MediaPlayerService.PlayingInfo(definition));//sets tags, text and font
-			button.setId(MainTabbedActivity.generateUniqueId());
-			mRadioButtonIds.add(button.getId());
-			button.setLayoutParams(layoutParams);
-			button.setPadding(paddingLeft, paddingTop, paddingRight, paddingBottom);
-			button.setOnClickListener(radioRowControlClick);
-			button.setOnLongClickListener(radioRowControlLongClick);
-			button.setOnTouchListener(stationRowTouch);
-			if(currentPlayingStationDef != null){
-				if(currentPlayingStationDef.uri.equalsIgnoreCase(stationsDefinition.get(i)[MediaPlayerService.DEF_POS_URL])) {
-					selectedStation = button;
-					stationsRadioGroup.check(selectedStation.getId());
-					currentPlayingStationDef = null;//to prevent other checking
-				}
-			}
-			setCurrentRecordingControls(button, runningRecordings!= null ? runningRecordings.get(playingInfo.uri):null);
-			View divider = new View(mFragmentContainer.getContext(), null, R.style.Divider);
-			divider.setLayoutParams(new RadioGroup.LayoutParams(LayoutParams.MATCH_PARENT, 1, 1f));
-			stationsRadioGroup.addView(divider);
+	private void initializeStationsList(final ArrayList<String[]> stationsDefinition, MediaPlayerService.PlayingInfo currentPlayingStationDef) {
+		if(currentPlayingStationDef == null){
+			if(MainTabbedActivity.mBound)
+				currentPlayingStationDef = MainTabbedActivity.mService.whatIsPlaying();
+			if(currentPlayingStationDef == null)
+				currentPlayingStationDef = MediaPlayerService.PlayingInfo.getInstance((Button) selectedRadioStation);
 		}
-		//set click listener
-		stationsRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-			public void onCheckedChanged(RadioGroup group, int checkedId) {
-				View checkedRadio = getActivity().findViewById(checkedId);
-				if(checkedRadio != null)
-					selectStation(checkedRadio);
+		final String currentUrl
+				= currentPlayingStationDef!= null&& currentPlayingStationDef.uri != null && !currentPlayingStationDef.uri.equals("null")
+				? currentPlayingStationDef.uri
+				: null;
+		getActivity().runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				String testUrl = currentUrl;
+				HashMap<String, Integer> runningRecordings = MainTabbedActivity.mBound ? MainTabbedActivity.mService.getRecordingMap() : null;
+
+				RadioGroup stationsRadioGroup = getStationsRadioGroup();
+				if(stationsRadioGroup.getChildCount()> 0){
+					unCheckAllRadioButtonsBut(null);
+					stationsRadioGroup.removeAllViews();
+				}
+				RadioButton button;
+				LinearLayout row;
+				String[] definition;
+				RadioGroup.LayoutParams layoutParams = new RadioGroup.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT, 1.0f);
+				int length = stationsDefinition.size();
+				mRadioButtonIds = new ArrayList<>(length);
+				int paddingLeft = 10;
+				int paddingTop = MediaPlayerService.mPrefPaddingTop;
+				int paddingBottom = new Double(paddingTop * 1.5).intValue();
+				int paddingRight = 4;
+				MediaPlayerService.PlayingInfo playingInfo;
+				selectedRadioStation = null;
+				int overallHeight = 0;
+				int scrollY = 0;
+				for (int i = 0; length > i; i++) {
+					definition = stationsDefinition.get(i);
+					mFragmentInflater.inflate(R.layout.template_radiobutton, stationsRadioGroup);
+					row = (LinearLayout) stationsRadioGroup.getChildAt(stationsRadioGroup.getChildCount() - 1);
+					button = (RadioButton) row.getChildAt(POSITION_RADIO);
+					initRadioRowControl(row.getChildAt(POSITION_RECORD));
+					initRadioRowControl(row.getChildAt(POSITION_PAUSE));
+					initRadioRowControl(row.getChildAt(POSITION_STOP));
+					MediaPlayerService.setButtonByDefinition(button, playingInfo = new MediaPlayerService.PlayingInfo(definition));//sets tags, text and font
+					button.setId(MainTabbedActivity.generateUniqueId());
+					mRadioButtonIds.add(button.getId());
+					button.setLayoutParams(layoutParams);
+					button.setPadding(paddingLeft, paddingTop, paddingRight, paddingBottom);
+					button.setOnClickListener(radioRowControlClick);
+					button.setOnLongClickListener(radioRowControlLongClick);
+					button.setOnTouchListener(stationRowTouch);
+					overallHeight += Math.abs(row.getLayoutParams().height);
+					if (testUrl != null && testUrl.equalsIgnoreCase(stationsDefinition.get(i)[MediaPlayerService.DEF_POS_URL])) {
+						((RadioButton)(selectedRadioStation = button)).setChecked(true);//stationsRadioGroup.check((selectedRadioStation = button).getId());
+						testUrl = null;//to prevent farther checking
+						scrollY = overallHeight;
+					}
+					setCurrentRecordingControls(button, runningRecordings != null ? runningRecordings.get(playingInfo.uri) : null);
+					View divider = new View(mFragmentContainer.getContext(), null, R.style.Divider);
+					divider.setLayoutParams(new RadioGroup.LayoutParams(LayoutParams.MATCH_PARENT, 1, 1f));
+					stationsRadioGroup.addView(divider);
+					overallHeight +=Math.abs(divider.getLayoutParams().height);
+				}
+				if(selectedRadioStation != null)
+					stationsRadioGroup.requestChildFocus((LinearLayout)selectedRadioStation.getParent(), selectedRadioStation);
 			}
 		});
+		//thread.start();
 	}
 
 	private LinearLayout.LayoutParams getCorrectedLayoutParamsForRadioButton(RadioButton button){
@@ -213,13 +225,20 @@ public class FavoriteStationsFrame extends Fragment {//AppCompatActivity {
 	private void initRadioRowControl(View control){
 		control.setOnClickListener(radioRowControlClick);
 	}
-	private void unCheckAllRadioButtons(Integer checkedId)
-	{
+
+	private void unCheckAllRadioButtonsBut(RadioButton radio){// checkedId){
+		Integer checkedId = radio != null ? radio.getId():null;
 		RadioGroup radioGroup = getStationsRadioGroup();
-		RadioButton checkedButton = (RadioButton) mFragmentRootView.findViewById(radioGroup.getCheckedRadioButtonId());
-		for(int id:mRadioButtonIds)
-			if((checkedButton = (RadioButton)radioGroup.findViewById(id)) != null && checkedButton.isChecked() && (checkedId != null && id != checkedId))
-				checkedButton.setChecked(false);
+		RadioButton checkedButton;// = (RadioButton) mFragmentRootView.findViewById(radioGroup.getCheckedRadioButtonId());
+		boolean setChecked;
+		for(int id:mRadioButtonIds) {
+			checkedButton = (RadioButton) radioGroup.findViewById(id);
+			if (checkedButton != null) {
+				setChecked = (checkedId != null && id == checkedId);
+				if (checkedButton.isChecked() != setChecked)
+					checkedButton.setChecked(setChecked);
+			}
+		}
 	}
 
 	private View.OnClickListener radioRowControlClick = new View.OnClickListener() {
@@ -379,8 +398,8 @@ public class FavoriteStationsFrame extends Fragment {//AppCompatActivity {
 				MainTabbedActivity.exitApp();*/
 			switch(type){
 				case MediaPlayerService.BROADCAST_MESSAGE_EXTRA_ADD_RADIO_NAME:
-					if(selectedStation!= null)
-						message += " " +((RadioButton) selectedStation).getText();
+					if(selectedRadioStation != null)
+						message += " " +((RadioButton) selectedRadioStation).getText();
 					break;
 				case MediaPlayerService.BROADCAST_MESSAGE_EXTRA_ON_PREPARED_FINISHED:
 					//showPlayPauseButton();
@@ -466,27 +485,32 @@ public class FavoriteStationsFrame extends Fragment {//AppCompatActivity {
 	}
 	public void synchronizeOnServiceConnected(MediaPlayerService mService){
 		Log.d("FSF","onServiceConnected "+ mService.toString());
-		String currentPlayingStationName = mService.whatIsPlaying();
+		MediaPlayerService.PlayingInfo currentPlayingStationInfo = mService.whatIsPlaying();
+		String currentPlayingName = currentPlayingStationInfo != null ? currentPlayingStationInfo.name : null;
 		HashMap<String, Integer> recordingMap = mService.getRecordingMap();
 		RadioGroup stationsRadioGroup = getStationsRadioGroup();
 		int stations = stationsRadioGroup.getChildCount();
 		RadioButton radioButton;
 		View row;
-		Integer currentRecordingStatus;
+		selectedRadioStation = null;
 		for(int i=0;stations > i;i++){
 			row = stationsRadioGroup.getChildAt(i);
 			if(row != null && row instanceof LinearLayout) {
 				radioButton = (RadioButton) ((LinearLayout)row).getChildAt(POSITION_RADIO);
-				if (selectedStation == null && currentPlayingStationName != null && radioButton.getText().equals(currentPlayingStationName)) {
-					selectedStation = radioButton;
-					stationsRadioGroup.check(radioButton.getId());
+				if (radioButton.getText().equals(currentPlayingName)) {
+					selectedRadioStation = radioButton;
+					radioButton.setChecked(true);
 				}
+				else if(radioButton.isChecked())
+					radioButton.setChecked(false);
 				setCurrentRecordingControls(radioButton, recordingMap.get(radioButton.getTag(MediaPlayerService.TAG_URI)));
 			}
 		}
+		//if(selectedRadioStation == null)
+		//	stationsRadioGroup.clearCheck();
 		/*
 		synchronizePlayPauseButton();
-		if (mService.isAutoPlayCase() && getBooleanPreference("autoplay_switch", false) && selectedStation != null)
+		if (mService.isAutoPlayCase() && getBooleanPreference("autoplay_switch", false) && selectedRadioStation != null)
 			doClickOnStopPlayButton(getPlayStopButton(), false);
 		*/
 
@@ -597,10 +621,10 @@ public class FavoriteStationsFrame extends Fragment {//AppCompatActivity {
 					reReadSettings();
 				break;
 			case RESULT_ADD_STATIONS:
-				if(preferences.getBoolean(FavoriteStationsFrame.PREFERENCE_LIST_OF_STATIONS_CHANGED, false)) {
-					SharedPreferences.Editor prefEditor = preferences.edit();
+				if(MainTabbedActivity.mPreferences.getBoolean(FavoriteStationsFrame.PREFERENCE_LIST_OF_STATIONS_CHANGED, false)) {
+					SharedPreferences.Editor prefEditor = MainTabbedActivity.mPreferences.edit();
 					prefEditor.putBoolean(PREFERENCE_LIST_OF_STATIONS_CHANGED, false);
-					prefEditor.commit();
+					prefEditor.apply();
 					initializeStationsList(getStationsListFromPreferences(), null);
 				}
 				break;
@@ -616,11 +640,11 @@ public class FavoriteStationsFrame extends Fragment {//AppCompatActivity {
 	public static ArrayList<String[]> commitStationsList(ArrayList<String[]> stationsList, String preferenceListOfStationsChanged) {
 		if(stationsList.size() == 0)
 			stationsList = getDefaultStationsList();
-		SharedPreferences.Editor prefEditor = preferences.edit();
+		SharedPreferences.Editor prefEditor = MainTabbedActivity.mPreferences.edit();
 		prefEditor.putString(PREFERENCE_LIST_OF_STATIONS, serializeStationsList(stationsList));
 		if(preferenceListOfStationsChanged != null)
 			prefEditor.putBoolean(preferenceListOfStationsChanged, true);
-		prefEditor.commit();
+		prefEditor.apply();
 		return stationsList;
 	}
 
@@ -628,7 +652,7 @@ public class FavoriteStationsFrame extends Fragment {//AppCompatActivity {
 	private static ArrayList<String[]> getDefaultStationsList(){
 		final String[][] aButtonsDef = {
 				{PREF_TYPE_OTHER, "http://stream05.media.rambler.ru/echo.mp3", "Echo Moscow"},
-				{PREF_TYPE_OTHER, "http://95.79.31.115:8000/", "Echo Moscow LQ"},
+				//{PREF_TYPE_OTHER, "http://95.79.31.115:8000/", "Echo Moscow LQ"},
 				{PREF_TYPE_OTHER, "http://icecast.vgtrk.cdnvideo.ru/mayakfm_mp3_64kbps", "Mayak"},
 				{PREF_TYPE_OTHER, "http://ags.abinet.com:8800/dr.mp3", "Davidzon Radio"},
 				{PREF_TYPE_OTHER, "http://stream.kazancity.net:8000/27-mds", "MDS Station"},
@@ -646,7 +670,7 @@ public class FavoriteStationsFrame extends Fragment {//AppCompatActivity {
 		return getStationsListFromPreferences(null);
 	}
 	public static ArrayList<String[]> getStationsListFromPreferences(ArrayList<String[]> addStations){
-		ArrayList<String[]> stationsList = deSerializeStationsList(preferences.getString(PREFERENCE_LIST_OF_STATIONS, null));
+		ArrayList<String[]> stationsList = deSerializeStationsList(MainTabbedActivity.mPreferences.getString(PREFERENCE_LIST_OF_STATIONS, null));
 		if(stationsList.size() == 0) {
 			commitStationsList(stationsList = getDefaultStationsList(), FavoriteStationsFrame.PREFERENCE_LIST_OF_STATIONS_CHANGED);
 		}
@@ -694,18 +718,18 @@ public class FavoriteStationsFrame extends Fragment {//AppCompatActivity {
 		reReadSettings();
 		setMonitoringToService();
 		StringBuilder builder = new StringBuilder();
-		Map<String,?> map = preferences.getAll();
+		Map<String,?> map = MainTabbedActivity.mPreferences.getAll();
 		Set<String> keys = map.keySet();
 		String s;
 		for(String key:keys){
 			builder.append("\n ").append(key).append('[').append(s=(map.get(key).getClass().getSimpleName())).append(":]");
 			switch(s) {
 				case "String":
-					builder.append(preferences.getString(key, "NULL")); break;
+					builder.append(MainTabbedActivity.mPreferences.getString(key, "NULL")); break;
 				case "Integer":
-					builder.append(preferences.getInt(key, -11111)); break;
+					builder.append(MainTabbedActivity.mPreferences.getInt(key, -11111)); break;
 				case "Boolean":
-					builder.append(preferences.getBoolean(key, false)); break;
+					builder.append(MainTabbedActivity.mPreferences.getBoolean(key, false)); break;
 			}
 		}
 		/*
@@ -758,7 +782,7 @@ public class FavoriteStationsFrame extends Fragment {//AppCompatActivity {
 	 * /
 	private void synchronizePlayPauseButton()	{
 		FloatingActionButton button = getPlayStopButton();
-		if (selectedStation != null) {
+		if (selectedRadioStation != null) {
 			if(button.getTag() == null )
 				button.setTag("ic_media_play|ic_media_pause");
 			String tag = button.getTag().toString();
@@ -803,11 +827,12 @@ public class FavoriteStationsFrame extends Fragment {//AppCompatActivity {
 		return strArray;
 	}
 	*/
+	/*
 	private boolean startPlaying() {
 		boolean bRes = false;
 		String message = null;
-		if (selectedStation != null) {
-			MediaPlayerService.PlayingInfo definition = new MediaPlayerService.PlayingInfo((RadioButton)selectedStation);
+		if (selectedRadioStation != null) {
+			MediaPlayerService.PlayingInfo definition = new MediaPlayerService.PlayingInfo((RadioButton)selectedRadioStation);
 			if (definition != null) {
 				if (MainTabbedActivity.mBound) {
 					//getPlayStopButton().setVisibility(View.GONE);
@@ -833,7 +858,7 @@ public class FavoriteStationsFrame extends Fragment {//AppCompatActivity {
 		//getPlayStopButton().setVisibility(View.VISIBLE);
 		return bRes;
 	}
-
+	*/
 	private void displayMessage(String message) {
 		displayMessage("i", "Start Playing", message);
 	}
@@ -896,40 +921,40 @@ public class FavoriteStationsFrame extends Fragment {//AppCompatActivity {
 		}*/
 		/*TextView textView = (TextView) infoPopup.getContentView().findViewById(R.id.popup_text);
 		textView.setText(message);*//*
-		View anchor = selectedStation == null ? (View) findViewById(R.id.stations_radio_group) : selectedStation;
+		View anchor = selectedRadioStation == null ? (View) findViewById(R.id.stations_radio_group) : selectedRadioStation;
 		infoPopup.showAsDropDown(anchor, 400, -10, Gravity.FILL);
 		infoPopup.update(800, 200);
 		popupHideHandler.postDelayed(popupHideRunnable, 10000);*/
 	}
 
 	public void selectStation(View view) {
-		unCheckAllRadioButtons(view!=null ? view.getId(): null);
-		if (MainTabbedActivity.mBound) {
-			String whatIsPlaying =  MainTabbedActivity.mService.whatIsPlaying();
-			if(selectedStation == null) {
-				MainTabbedActivity.setSelectedStation(selectedStation = view);
-				if(whatIsPlaying != null && ((RadioButton) selectedStation).getText() == whatIsPlaying )
-					return;
+		if (view != null && view instanceof RadioButton) {
+			RadioButton radio = (RadioButton) view;
+			unCheckAllRadioButtonsBut(radio);
+			String selectedName = (String) radio.getText();
+			if (MainTabbedActivity.mBound) {
+				MediaPlayerService.PlayingInfo whatIsPlaying = MainTabbedActivity.mService.whatIsPlaying();
+				if(whatIsPlaying != null){
+					if(whatIsPlaying.name.equals(selectedName) || view.getTag(MediaPlayerService.TAG_URI).equals(whatIsPlaying.uri))
+						return;
+					else
+						MainTabbedActivity.doClickOnStopPlayButton(ACTION_STOP);
+				}
+				MainTabbedActivity.setSelectedStation(view);
+				MainTabbedActivity.doClickOnStopPlayButton(ACTION_PLAY);
 			}
-			else if (whatIsPlaying != null && selectedStation.getTag(MediaPlayerService.TAG_URI) == view.getTag(MediaPlayerService.TAG_URI) && whatIsPlaying == ((RadioButton) view).getText()){
-				MainTabbedActivity.setSelectedStation(selectedStation = view);
-				return;
-			}
-			if(whatIsPlaying != null) {
-				MainTabbedActivity.doClickOnStopPlayButton(ACTION_STOP);
-			}
-			MainTabbedActivity.setSelectedStation(selectedStation = view);
-			MainTabbedActivity.doClickOnStopPlayButton(ACTION_PLAY);
+			selectedRadioStation = view;
 		}
 	}
-
+	/*
 	private void unselectStation() {
 		RadioGroup stationsRadioGroup = getStationsRadioGroup();
 		stationsRadioGroup.clearCheck();
-		selectedStation = null;
+		selectedRadioStation = null;
 		MainTabbedActivity.doClickOnStopPlayButton(ACTION_STOP);
 
 	}
+	*/
 	/*
 	public void dismissInfoPopup() {
 		try {

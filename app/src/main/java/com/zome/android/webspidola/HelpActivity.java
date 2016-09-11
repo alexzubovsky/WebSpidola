@@ -85,15 +85,17 @@ public class HelpActivity extends AppCompatActivity {
 
 		return super.onOptionsItemSelected(item);
 	}
-	public final static int HELP_SECTION_FAVORITES = 1;
+	public final static int HELP_SECTION_FAVORITES = 0;
+	public final static int HELP_SECTION_FAVORITES_2 = 1;
 	public final static int HELP_SECTION_RECORDINGS =2;
 	public final static int HELP_SECTION_SEARCH = 3;
 	public final static int HELP_SECTION_MANAGE = 4;
-	public final static int HELP_SECTION_SETTINGS = 5;
-	public final static int HELP_SECTION_SETTINGS_1 = 6;
-	public final static int HELP_SECTION_SETTINGS_2 = 7;
-	public final static int HELP_SECTION_SETTINGS_3 = 0;
-	public final static int HELP_SECTIONS_NUMBER = 8;
+	public final static int HELP_SECTION_FAVORITES_3 = 5;
+	public final static int HELP_SECTION_SETTINGS = 6;
+	public final static int HELP_SECTION_SETTINGS_1 = 7;
+	public final static int HELP_SECTION_SETTINGS_2 = 8;
+	public final static int HELP_SECTION_SETTINGS_3 = 9;
+	public final static int HELP_SECTIONS_NUMBER = 10;
 	/**
 	 * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
 	 * one of the sections/tabs/pages.
@@ -108,7 +110,7 @@ public class HelpActivity extends AppCompatActivity {
 		public Fragment getItem(int position) {
 			// getItem is called to instantiate the fragment for the given page.
 			// Return a PlaceholderFragment (defined as a static inner class below).
-			return PlaceholderFragment.newInstance(position + 1);
+			return PlaceholderFragment.newInstance(position);
 		}
 
 		@Override
@@ -121,6 +123,10 @@ public class HelpActivity extends AppCompatActivity {
 		public CharSequence getPageTitle(int position) {
 			switch (position) {
 				case HELP_SECTION_FAVORITES:
+					return "SECTION "+String.valueOf(position);
+				case HELP_SECTION_FAVORITES_2:
+					return "SECTION "+String.valueOf(position);
+				case HELP_SECTION_FAVORITES_3:
 					return "SECTION "+String.valueOf(position);
 				case HELP_SECTION_RECORDINGS:
 					return "SECTION "+String.valueOf(position);
@@ -169,56 +175,65 @@ public class HelpActivity extends AppCompatActivity {
 		@Override
 		public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 			View rootView = inflater.inflate(R.layout.fragment_help, container, false);
-			int sectionNumber = this.getArguments().getInt(ARG_SECTION_NUMBER);
-			TextView textView = (TextView) rootView.findViewById(R.id.help_section_label);
-			textView.setText(getString(R.string.help_section_title, getHelpSectionTitle(sectionNumber)));
+			TextView titleView = (TextView) rootView.findViewById(R.id.help_section_label);
+			TextView textView = (TextView) rootView.findViewById(R.id.help_section_text);
 			ImageView image= (ImageView) rootView.findViewById(R.id.help_section_image);
-			image.setImageResource(getImgaeResourceIdBySection(sectionNumber));
+			int sectionNumber = this.getArguments().getInt(ARG_SECTION_NUMBER);
+			switch(sectionNumber) {
+				case HELP_SECTION_FAVORITES_2:
+					titleView.setText(getString(R.string.help_favorites));
+					textView.setText(getString(R.string.help_favorites_text_2));
+					image.setImageResource(R.drawable.help_favorites_2);
+					break;
+				case HELP_SECTION_FAVORITES_3:
+					titleView.setText(getString(R.string.help_favorites));
+					textView.setText(getString(R.string.help_favorites_text_3));
+					image.setImageResource(R.drawable.help_favorites_3);
+					break;
+				case HELP_SECTION_RECORDINGS:
+					titleView.setText(getString(R.string.help_recordings));
+					textView.setText(getString(R.string.help_recordings_text));
+					image.setImageResource(R.drawable.help_recordings);
+					break;
+				case HELP_SECTION_SEARCH:
+					titleView.setText(getString(R.string.help_search));
+					textView.setText(getString(R.string.help_search_text));
+					image.setImageResource(R.drawable.help_search);
+					break;
+				case HELP_SECTION_MANAGE:
+					titleView.setText(getString(R.string.help_manage));
+					textView.setText(getString(R.string.help_manage_text));
+					image.setImageResource(R.drawable.help_manage);
+					break;
+				case HELP_SECTION_SETTINGS:
+					titleView.setText(getString(R.string.help_settings));
+					textView.setText(getString(R.string.help_settings_text));
+					image.setImageResource(R.drawable.help_settings);
+					break;
+				case HELP_SECTION_SETTINGS_1:
+					titleView.setText(getString(R.string.help_settings_1));
+					textView.setText(getString(R.string.help_settings_1_text));
+					image.setImageResource(R.drawable.help_settings_1);
+					break;
+				case HELP_SECTION_SETTINGS_2:
+					titleView.setText(getString(R.string.help_settings_2));
+					textView.setText(getString(R.string.help_settings_2_text));
+					image.setImageResource(R.drawable.help_settings_2);
+					break;
+				case HELP_SECTION_SETTINGS_3:
+					titleView.setText(getString(R.string.help_settings_3));
+					textView.setText(getString(R.string.help_settings_3_text));
+					image.setImageResource(R.drawable.help_settings_3);
+					break;
+				case HELP_SECTION_FAVORITES:
+				default:
+					titleView.setText(getString(R.string.help_favorites));
+					textView.setText(getString(R.string.help_favorites_text));
+					image.setImageResource(R.drawable.help_favorites);
+			}
 			return rootView;
 		}
 
-		private String getHelpSectionTitle(int sectionNumber) {
-			switch(sectionNumber){
-				case HELP_SECTION_RECORDINGS:
-					return getString(R.string.help_recordings);
-				case HELP_SECTION_SEARCH:
-					return getString(R.string.help_search);
-				case HELP_SECTION_MANAGE:
-					return getString(R.string.help_manage);
-				case HELP_SECTION_SETTINGS:
-					return getString(R.string.help_settings);
-				case HELP_SECTION_SETTINGS_1:
-					return getString(R.string.help_settings_1);
-				case HELP_SECTION_SETTINGS_2:
-					return getString(R.string.help_settings_2);
-				case HELP_SECTION_SETTINGS_3:
-					return getString(R.string.help_settings_3);
-				case HELP_SECTION_FAVORITES:
-				default:
-					return getString(R.string.help_favorites);
-			}
-		}
 
-		private static int getImgaeResourceIdBySection(int sectionNumber) {
-			switch(sectionNumber){
-				case HELP_SECTION_RECORDINGS:
-					return R.drawable.help_recordings;
-				case HELP_SECTION_SEARCH:
-					return R.drawable.help_search;
-				case HELP_SECTION_MANAGE:
-					return R.drawable.help_manage;
-				case HELP_SECTION_SETTINGS:
-					return R.drawable.help_settings;
-				case HELP_SECTION_SETTINGS_1:
-					return R.drawable.help_settings_1;
-				case HELP_SECTION_SETTINGS_2:
-					return R.drawable.help_settings_2;
-				case HELP_SECTION_SETTINGS_3:
-					return R.drawable.help_settings_3;
-				case HELP_SECTION_FAVORITES:
-				default:
-					return R.drawable.help_favorites;
-			}
-		}
 	}
 }

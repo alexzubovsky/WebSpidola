@@ -242,6 +242,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 			bindPreferenceSummaryToValue(findPreference(getString(R.string.font_size_for_search_value)));
 			bindPreferenceSummaryToValue(findPreference(getString(R.string.space_size_value)));
 			bindPreferenceSummaryToValue(findPreference(getString(R.string.themes_list)));
+			bindPreferenceSummaryToValue(findPreference(getString(R.string.TOP_POSITION_PAUSE_BUTTON)));
 		}
 
 	}

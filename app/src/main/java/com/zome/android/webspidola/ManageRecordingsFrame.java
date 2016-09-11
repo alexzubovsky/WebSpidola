@@ -93,20 +93,36 @@ public class ManageRecordingsFrame extends Fragment {
 	private boolean OnResumeDone = false;
 	public void onResume(){
 		super.onResume();
-		ArrayList<String> expandedGroups = mSavedInstanceState != null ? mSavedInstanceState.getStringArrayList(EXPANDED_GROUPS_LIST):getExpandedGroups();
+		/*ArrayList<String> expandedGroups = mSavedInstanceState != null ? mSavedInstanceState.getStringArrayList(EXPANDED_GROUPS_LIST):getExpandedGroups();
 		mSavedInstanceState = null;
 		initRecordedStationsView(expandedGroups);//Get recording content
 		showBatchPlayingProgress();
-		OnResumeDone = true;
+		OnResumeDone = true;*/
 	}
 	@Override
 	public void onPause(){
 		super.onPause();
-		if(customHandler!=null){
+		/*if(customHandler!=null){
 			customHandler.removeCallbacks(updateTimerThread);
 			customHandler = null;
 		}
-		OnResumeDone = false;
+		OnResumeDone = false;*/
+	}
+	@Override
+	public void setUserVisibleHint(boolean isVisibleToUser) {
+		super.setUserVisibleHint(isVisibleToUser);
+		if (isVisibleToUser) {
+			ArrayList<String> expandedGroups = mSavedInstanceState != null ? mSavedInstanceState.getStringArrayList(EXPANDED_GROUPS_LIST) : getExpandedGroups();
+			mSavedInstanceState = null;
+			initRecordedStationsView(expandedGroups);//Get recording content
+			showBatchPlayingProgress();
+			OnResumeDone = true;
+		}
+		else if(customHandler!=null){
+			customHandler.removeCallbacks(updateTimerThread);
+			customHandler = null;
+			OnResumeDone = false;
+		}
 	}
 
 	@Override
@@ -168,12 +184,20 @@ public class ManageRecordingsFrame extends Fragment {
 			MediaPlayerService.BatchPlayingStat batchPlayingStat = MediaPlayerService.BatchPlayingStat.getInstance(null);
 			int position = batchPlayingStat.getCurrentPercentageInPlay();
 			View playingIndicators = mFragmentRootView.findViewById(R.id.manage_recordings_controls);
-			LinearLayout previousView;
 			if(playingIndicators == null && previousIndicatosHolder != null && previousIndicatosHolder.getChildCount() == 2) {
 				playingIndicators = previousIndicatosHolder.getChildAt(1);
 			}
-			if(position >= 0) {
-				MediaPlayerService.PlayingInfo currentPlayingInfo = batchPlayingStat.getCurrentPlaying();
+			if(playingIndicators!= null && playingIndicators.getParent()!= null ){
+				if(playingIndicators.getParent() instanceof LinearLayout) {
+					LinearLayout parent = (LinearLayout) playingIndicators.getParent();
+					if(parent.getParent() == null){
+						parent.removeView(playingIndicators);
+						playingIndicators = null;
+					}
+				}
+			}
+			MediaPlayerService.PlayingInfo currentPlayingInfo;
+			if((position >= 0) && (currentPlayingInfo = batchPlayingStat.getCurrentPlaying())!=null) {
 				if(previousIndicatosHolder == null || playingIndicators == null || (currentPlayingInfo != null && !currentPlayingInfo.equalTo((MediaPlayerService.PlayingInfo) previousIndicatosHolder.getTag()))){
 					if(previousIndicatosHolder != null && previousIndicatosHolder.getChildCount() == 2)
 						previousIndicatosHolder.removeViewAt(1);
@@ -223,25 +247,27 @@ public class ManageRecordingsFrame extends Fragment {
 	}
 
 	private View findViewByInfo(MediaPlayerService.PlayingInfo playingInfo) {
-		SavedRecordsGroup group;
-		View view;
-		MediaPlayerService.PlayingInfo tag;
-		int childCount;
-		Integer groupId = playingInfo.getGroupId();
-		if(groupId != null && groupId>=0 && groupId<mRecordsListAdapter.getGroupCount()) {
-			ExpandableListView recordingGroupsList = (ExpandableListView) mFragmentRootView.findViewById(R.id.recordings_list);
-			if (!recordingGroupsList.isGroupExpanded(groupId))
-				recordingGroupsList.expandGroup(groupId);
-			group = mRecordsListAdapter.getGroup(groupId);
-			childCount = group.size();
-			for (int j = 0; childCount > j; j++) {
-				if (mRecordsListAdapter.getChild(groupId, j).equalTo(playingInfo)) {
-					int viewCount = recordingGroupsList.getChildCount();
-					for (int k = 0; viewCount > k; k++) {//View view = recordingGroupsList.findViewWithTag(playingInfo);
-						if ((view = recordingGroupsList.getChildAt(k)) != null && (view instanceof LinearLayout)) {
-							tag = (MediaPlayerService.PlayingInfo) view.getTag();
-							if (playingInfo.equalTo(tag))
-								return view;
+		if(playingInfo != null) {
+			SavedRecordsGroup group;
+			View view;
+			MediaPlayerService.PlayingInfo tag;
+			int childCount;
+			Integer groupId = playingInfo.getGroupId();
+			if (groupId != null && groupId >= 0 && groupId < mRecordsListAdapter.getGroupCount()) {
+				ExpandableListView recordingGroupsList = (ExpandableListView) mFragmentRootView.findViewById(R.id.recordings_list);
+				if (!recordingGroupsList.isGroupExpanded(groupId))
+					recordingGroupsList.expandGroup(groupId);
+				group = mRecordsListAdapter.getGroup(groupId);
+				childCount = group.size();
+				for (int j = 0; childCount > j; j++) {
+					if (mRecordsListAdapter.getChild(groupId, j).equalTo(playingInfo)) {
+						int viewCount = recordingGroupsList.getChildCount();
+						for (int k = 0; viewCount > k; k++) {//View view = recordingGroupsList.findViewWithTag(playingInfo);
+							if ((view = recordingGroupsList.getChildAt(k)) != null && (view instanceof LinearLayout)) {
+								tag = (MediaPlayerService.PlayingInfo) view.getTag();
+								if (playingInfo.equalTo(tag))
+									return view;
+							}
 						}
 					}
 				}

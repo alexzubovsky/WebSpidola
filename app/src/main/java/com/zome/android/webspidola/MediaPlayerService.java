@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.graphics.BitmapFactory;
 import android.media.AudioManager;
 import android.media.MediaScannerConnection;
 import android.net.ConnectivityManager;
@@ -164,7 +165,12 @@ public class MediaPlayerService extends Service implements AudioManager.OnAudioF
 	public static final int  TAG_URI = R.string.TAG_URI;
 	public static final int  TAG_TYPE = R.string.TAG_TYPE;
 	public static PlayingInfo currentlyPlayingInfo;
+	//Search frame data
+	public static ArrayList<String[]> mStationForRestore = null;
+	public static ArrayList<String[]> mNavigationsForRestore = null;
+	public static String mSearchInputText = "";
 
+	public static boolean topPositionOfPlayPause = true;
 	@Override
 	public IBinder onBind(Intent intent) {
 		return mBinder;
@@ -512,9 +518,10 @@ public class MediaPlayerService extends Service implements AudioManager.OnAudioF
 	private static void engageNotificationBar(String text, NotificationCompat.Action[] actions) {
 		//Notification Area content
 		NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(mService/*this*/);
-		int iconId = android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP ? R.drawable.spidola64_sil_1:R.drawable.spidola64;
+		int iconId = android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP ? R.drawable.spidola64_sil_2:R.drawable.spidola64;
 		mBuilder.setSmallIcon(iconId);
-		mBuilder.setContentTitle("Web Spidola");
+		mBuilder.setLargeIcon(BitmapFactory.decodeResource(mContext.getResources(), R.drawable.spidolabigimg));
+		mBuilder.setContentTitle(mContext.getString(R.string.application_name));
 		// The stack builder object will contain an artificial back stack for the
 		// started Activity.
 		// This ensures that navigating backward from the Activity leads out of
@@ -742,9 +749,9 @@ public class MediaPlayerService extends Service implements AudioManager.OnAudioF
 			logAndBroadcast("i", CURRENT_STATUS_IN_STOP);
 		}
 	}
-	public String whatIsPlaying(){
+	public PlayingInfo whatIsPlaying(){
 		boolean playing = mediaPlayer!=null && (isPlaying() || isMediaPlayerReadyToContinue());//mediaPlayerRegisteredState == ON_PAUSE));
-		return playing && currentlyPlayingInfo!=null? currentlyPlayingInfo.name/*selectedStationName*/ : null;
+		return playing && currentlyPlayingInfo!=null? currentlyPlayingInfo : null;
 	}
 	/*
 	public String getCurrentStationName(){
@@ -1588,18 +1595,19 @@ public class MediaPlayerService extends Service implements AudioManager.OnAudioF
 					int pos1 = serializedPlayInfo.indexOf(' ', pos + 1);
 					if (pos1 > 0) {
 						this.name = serializedPlayInfo.substring(pos1 + 1);
-						this.contentId = "";
-						this.provider = "";
 						this.uri = serializedPlayInfo.substring(pos + 1, pos1);
 						this.type = safeConvertType(serializedPlayInfo.substring(0, pos));
-						this.lastModified = 0;
-						//def[DEF_POS_TYPE] = savedPrefString.substring(0, pos);
-						//def[DEF_POS_URL] = savedPrefString.substring(pos + 1, pos1);
-						//def[DEF_POS_LABEL] = savedPrefString.substring(pos1 + 1);
 						return;
 					}
 				}
 			}
+			if(serializedPlayInfo.equals(("3 null "))){
+				this.type = Util.TYPE_OTHER;
+				this.uri = "http://oggvorbis.tb-stream.net:80/technobase.ogg";
+				this.name = "Ogg Radio";
+				return;
+			}
+
 			this.name = serializedPlayInfo;
 			Exception e = new Exception("Wrong string to desirialize:"+serializedPlayInfo);
 			e.printStackTrace();
@@ -1609,9 +1617,6 @@ public class MediaPlayerService extends Service implements AudioManager.OnAudioF
 				this.name = playInfoStringArray[2];
 				this.uri = playInfoStringArray[1];
 				this.type = safeConvertType(playInfoStringArray[0]);
-				//def[DEF_POS_TYPE] = savedPrefString.substring(0, pos);
-				//def[DEF_POS_URL] = savedPrefString.substring(pos + 1, pos1);
-				//def[DEF_POS_LABEL] = savedPrefString.substring(pos1 + 1);
 			}else{
 				this.name = playInfoStringArray !=null ? playInfoStringArray[0] :"";
 				Exception e = new Exception("Wrong string array to desirialize:" + (playInfoStringArray== null?"null":"length="+playInfoStringArray.length));
@@ -1676,6 +1681,18 @@ public class MediaPlayerService extends Service implements AudioManager.OnAudioF
 
 		public Integer getGroupId() {
 			return this.groupId;
+		}
+
+		public static PlayingInfo getInstance(String string) {
+			return string != null && !string.startsWith("3 null ") ? new PlayingInfo(string) : null;
+		}
+
+		public static PlayingInfo getInstance(String[] stringArray) {
+			return stringArray != null && stringArray.length>2 ? new PlayingInfo(stringArray):null;
+		}
+
+		public static PlayingInfo getInstance(Button radioStation) {
+			return radioStation != null ? new PlayingInfo(radioStation): null;
 		}
 		/*
 		public int setViewId(int viewId) {

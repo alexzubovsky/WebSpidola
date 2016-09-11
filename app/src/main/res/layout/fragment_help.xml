@@ -1,33 +1,55 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
                 xmlns:tools="http://schemas.android.com/tools"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 tools:context="com.zome.android.webspidola.HelpActivity$PlaceholderFragment"
-                android:background="@color/dim_foreground_disabled_material_dark">
+                android:background="@color/dim_foreground_disabled_material_dark"
+              android:orientation="vertical">
 
-    <LinearLayout
-        android:orientation="vertical"
+    <!--LinearLayout
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
         android:layout_centerHorizontal="true"
-        android:background="@color/dim_foreground_disabled_material_dark">
+        android:background="@color/dim_foreground_disabled_material_dark"-->
         <TextView
             android:id="@+id/help_section_label"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:textSize="24dp"
+            android:paddingLeft="@dimen/padding_medium"
+            android:text="Title"
+            android:layout_gravity="center_horizontal"/>
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        >
+        <TextView
+            android:id="@+id/help_section_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Description"
+            android:paddingLeft="@dimen/padding_medium"
             android:textSize="16dp"
             android:layout_gravity="center_horizontal"/>
-        <ScrollView
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1">
+    </ScrollView>
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="3"
+        >
         <ImageView
+            android:paddingTop="0dp"
+            android:src="@drawable/help_favorites"
             android:id="@+id/help_section_image"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            /><!--android:scaleType="fitCenter" -->
-        </ScrollView>
+            android:baselineAlignBottom="false"
+            android:forceHasOverlappingRendering="false"
+            android:cropToPadding="false"
+            android:adjustViewBounds="true"/><!--android:scaleType="fitCenter" -->
+    </ScrollView>
 
-    </LinearLayout>
+    <!--/LinearLayout-->
 
-</RelativeLayout>
+</LinearLayout>
