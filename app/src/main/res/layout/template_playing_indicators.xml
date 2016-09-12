@@ -1,23 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/manage_recordings_controls"
-    android:orientation="vertical"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_gravity="left|top">
+              android:id="@+id/manage_recordings_controls"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:layout_gravity="left|top"
+              android:background="#414290">
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        >
         <TextView
             android:id="@+id/overall_previous"
+            android:text="▲"
+            android:tag="-1"
+            android:layout_gravity="left|center_horizontal"
+            android:visibility="invisible"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="#FFFFFF"
-            android:textSize="32sp"
-            android:text="◄"
-            android:tag="-1"
-            android:layout_gravity="left|center_vertical"
-            android:textIsSelectable="false"/>
+            android:textSize="24sp"
+            android:textIsSelectable="false"
+            android:gravity="fill_horizontal|left|start"/>
         <SeekBar
             style="?android:attr/progressBarStyleHorizontal"
             android:layout_width="0dp"
@@ -32,13 +36,14 @@
             android:clickable="true"/>
         <TextView
             android:id="@+id/overall_next"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="►"
-            android:textColor="#FFFFFF"
-            android:textSize="32sp"
+            android:text="▼"
             android:tag="1"
             android:layout_gravity="right|center_vertical"
+            android:visibility="invisible"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#FFFFFF"
+            android:textSize="24sp"
             android:textIsSelectable="false"/>
     </LinearLayout>
 

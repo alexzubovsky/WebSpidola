@@ -22,6 +22,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -49,7 +50,7 @@ public class ManageRecordingsFrame extends Fragment {
 	private static ViewGroup mFragmentContainer;
 	private static Bundle mFragmentSavedInstanceState;
 	private static View mFragmentRootView;
-	private RecordsListAdapter mRecordsListAdapter = null;
+	//private RecordsListAdapter mRecordsListAdapter = null;
 
 	public static ManageRecordingsFrame newInstance(int sectionNumber, int columnCount){
 		final ManageRecordingsFrame fragment = new ManageRecordingsFrame();
@@ -93,6 +94,7 @@ public class ManageRecordingsFrame extends Fragment {
 	private boolean OnResumeDone = false;
 	public void onResume(){
 		super.onResume();
+		showBatchPlayingProgress();
 		/*ArrayList<String> expandedGroups = mSavedInstanceState != null ? mSavedInstanceState.getStringArrayList(EXPANDED_GROUPS_LIST):getExpandedGroups();
 		mSavedInstanceState = null;
 		initRecordedStationsView(expandedGroups);//Get recording content
@@ -102,9 +104,9 @@ public class ManageRecordingsFrame extends Fragment {
 	@Override
 	public void onPause(){
 		super.onPause();
-		/*if(customHandler!=null){
-			customHandler.removeCallbacks(updateTimerThread);
-			customHandler = null;
+		/*if(playingProgressHandler!=null){
+			playingProgressHandler.removeCallbacks(playingProgressThread);
+			playingProgressHandler = null;
 		}
 		OnResumeDone = false;*/
 	}
@@ -118,10 +120,11 @@ public class ManageRecordingsFrame extends Fragment {
 			showBatchPlayingProgress();
 			OnResumeDone = true;
 		}
-		else if(customHandler!=null){
-			customHandler.removeCallbacks(updateTimerThread);
-			customHandler = null;
+		else if(playingProgressHandler!=null){
+			playingProgressHandler.removeCallbacks(playingProgressThread);
+			playingProgressHandler = null;
 			OnResumeDone = false;
+			Log.e("MRF", "setUserVisibleHint:Not Visible:playingProgressHandler=null");
 		}
 	}
 
@@ -134,17 +137,20 @@ public class ManageRecordingsFrame extends Fragment {
 	}
 	private ArrayList<String> getExpandedGroups(){
 		ArrayList<String> expandedGroups = null;
-		if(mRecordsListAdapter != null) {
-			ExpandableListView recordingGroupsList = (ExpandableListView) mFragmentRootView.findViewById(R.id.recordings_list);
-			if(recordingGroupsList != null && recordingGroupsList.getAdapter() != null){
-				expandedGroups = new ArrayList<>();
-				int groupCount = mRecordsListAdapter.getGroupCount();
-				for (int i = 0; groupCount > i; i++) {
-					if (recordingGroupsList.isGroupExpanded(i))
-						expandedGroups.add(String.valueOf(i));
+		ExpandableListView recordingGroupsList = (ExpandableListView) mFragmentRootView.findViewById(R.id.recordings_list);
+		if(recordingGroupsList != null) {
+			RecordsListAdapter adapter = (RecordsListAdapter)recordingGroupsList.getExpandableListAdapter();
+			if (adapter != null) {
+				if (recordingGroupsList != null && recordingGroupsList.getAdapter() != null) {
+					expandedGroups = new ArrayList<>();
+					int groupCount = adapter.getGroupCount();
+					for (int i = 0; groupCount > i; i++) {
+						if (recordingGroupsList.isGroupExpanded(i))
+							expandedGroups.add(String.valueOf(i));
+					}
+					if (expandedGroups.size() == 0)
+						expandedGroups = null;
 				}
-				if (expandedGroups.size() == 0)
-					expandedGroups = null;
 			}
 		}
 		return expandedGroups;
@@ -161,25 +167,30 @@ public class ManageRecordingsFrame extends Fragment {
 	private void expandGroups(ArrayList<String> expandedGroups){
 		if(expandedGroups != null && expandedGroups.size()>0) {
 			ExpandableListView recordingGroupsList = (ExpandableListView) mFragmentRootView.findViewById(R.id.recordings_list);
-			int id;
-			for (String groupId : expandedGroups) {
-				if (mRecordsListAdapter.getGroup(id = Integer.parseInt(groupId)) != null)
-					recordingGroupsList.expandGroup(id);
+			if (recordingGroupsList != null) {
+				RecordsListAdapter adapter = (RecordsListAdapter) recordingGroupsList.getExpandableListAdapter();
+				if (adapter != null) {
+					int id;
+					for (String groupId : expandedGroups) {
+						if (adapter.getGroup(id = Integer.parseInt(groupId)) != null)
+							recordingGroupsList.expandGroup(id);
+					}
+				}
 			}
 		}
 	}
 	private void showBatchPlayingProgress(){
 		MediaPlayerService.BatchPlayingStat batchPlayingStat = MediaPlayerService.BatchPlayingStat.getInstance(null);
-		/*int position = batchPlayingStat.getCurrentPercentageInPlay();
-		if(position >= 0){*/
-			customHandler = new android.os.Handler();
-			customHandler.postDelayed(updateTimerThread, 500);
-		//}
+		if(batchPlayingStat.getCurrentPlaying()!= null && playingProgressHandler == null){//getCurrentPercentageInPlay();
+			playingProgressHandler = new android.os.Handler();
+			playingProgressHandler.postDelayed(playingProgressThread, 500);
+			Log.e("MRF", "showBatchPlayingProgress:playingProgressHandler=new");
+		}
 	}
 	//private MediaPlayerService.PlayingInfo mPreviousBatchPlayingInfo = null;
 	private LinearLayout previousIndicatosHolder = null;
-	private android.os.Handler customHandler;
-	private Runnable updateTimerThread = new Runnable(){
+	private android.os.Handler playingProgressHandler;
+	private Runnable playingProgressThread = new Runnable(){
 		public void run(){
 			MediaPlayerService.BatchPlayingStat batchPlayingStat = MediaPlayerService.BatchPlayingStat.getInstance(null);
 			int position = batchPlayingStat.getCurrentPercentageInPlay();
@@ -209,6 +220,8 @@ public class ManageRecordingsFrame extends Fragment {
 				}
 				if(playingIndicators!= null) {
 					playingIndicators.setVisibility(View.VISIBLE);
+					setProgressButtonVisibility(R.id.overall_previous, batchPlayingStat.isFirst());
+					setProgressButtonVisibility(R.id.overall_next, batchPlayingStat.isLast());
 					setProgressValue(R.id.overallProgressBar, batchPlayingStat.getCurrentPercentageInList());
 					setProgressValue(R.id.progressBar, position);
 
@@ -217,14 +230,25 @@ public class ManageRecordingsFrame extends Fragment {
 					setTextValue(R.id.current_time, MediaPlayerService.formatTimeString(Math.round(duration * (position / 100.0d))));
 					setTextValue(R.id.current_name, currentPlayingInfo==null?"":currentPlayingInfo.name);
 				}
-				if(customHandler ==null)
-					customHandler = new android.os.Handler();
-				customHandler.postDelayed(this, 500);
+				if(playingProgressHandler ==null) {
+					playingProgressHandler = new android.os.Handler();
+					Log.e("MRF", "playingProgressThread:run:playingProgressHandler=new");
+				}
+				playingProgressHandler.postDelayed(this, 500);
 			}
-			else if(playingIndicators != null)
-				playingIndicators.setVisibility(View.GONE);
+			else{
+				Log.e("MRF", "playingProgressThread:run:position="+position+", playingIndicators="+playingIndicators);
+
+				if(playingIndicators != null)
+					playingIndicators.setVisibility(View.GONE);
+			}
 		}
 	};
+	private void setProgressButtonVisibility(int id, boolean hide) {
+		TextView view = (TextView) mFragmentRootView.findViewById(id);
+		if(view != null)
+			view.setVisibility(hide ? View.INVISIBLE: View.VISIBLE);
+	}
 	private void setTextValue(int id, String value) {
 		TextView view = (TextView) mFragmentRootView.findViewById(id);
 		if(view != null)
@@ -247,32 +271,41 @@ public class ManageRecordingsFrame extends Fragment {
 	}
 
 	private View findViewByInfo(MediaPlayerService.PlayingInfo playingInfo) {
-		if(playingInfo != null) {
-			SavedRecordsGroup group;
-			View view;
-			MediaPlayerService.PlayingInfo tag;
-			int childCount;
-			Integer groupId = playingInfo.getGroupId();
-			if (groupId != null && groupId >= 0 && groupId < mRecordsListAdapter.getGroupCount()) {
-				ExpandableListView recordingGroupsList = (ExpandableListView) mFragmentRootView.findViewById(R.id.recordings_list);
-				if (!recordingGroupsList.isGroupExpanded(groupId))
-					recordingGroupsList.expandGroup(groupId);
-				group = mRecordsListAdapter.getGroup(groupId);
-				childCount = group.size();
-				for (int j = 0; childCount > j; j++) {
-					if (mRecordsListAdapter.getChild(groupId, j).equalTo(playingInfo)) {
-						int viewCount = recordingGroupsList.getChildCount();
-						for (int k = 0; viewCount > k; k++) {//View view = recordingGroupsList.findViewWithTag(playingInfo);
-							if ((view = recordingGroupsList.getChildAt(k)) != null && (view instanceof LinearLayout)) {
-								tag = (MediaPlayerService.PlayingInfo) view.getTag();
-								if (playingInfo.equalTo(tag))
-									return view;
+		ExpandableListView recordingGroupsList;
+		if(playingInfo != null && (recordingGroupsList = (ExpandableListView) mFragmentRootView.findViewById(R.id.recordings_list)) != null) {
+			RecordsListAdapter adapter = (RecordsListAdapter) recordingGroupsList.getExpandableListAdapter();
+			if(adapter != null) {
+				Integer groupId = playingInfo.getGroupId();
+				if (groupId != null && groupId >= 0 && groupId < adapter.getGroupCount()) {
+					if (!recordingGroupsList.isGroupExpanded(groupId))
+						recordingGroupsList.expandGroup(groupId);
+					SavedRecordsGroup group = adapter.getGroup(groupId);
+					int childCount = group.size();
+					View view;
+					MediaPlayerService.PlayingInfo tag;
+					for (int j = 0; childCount > j; j++) {
+						if (adapter.getChild(groupId, j).equalTo(playingInfo)) {
+							int viewCount = recordingGroupsList.getChildCount();
+							for (int k = 0; viewCount > k; k++) {//View view = recordingGroupsList.findViewWithTag(playingInfo);
+								if ((view = recordingGroupsList.getChildAt(k)) != null && (view instanceof LinearLayout)) {
+									tag = (MediaPlayerService.PlayingInfo) view.getTag();
+									if (playingInfo.equalTo(tag))
+										return view;
+								}
 							}
 						}
 					}
+					Log.e("MRF","Not founf uri="+playingInfo.uri+", groupId="+groupId+",groupSize="+childCount);
 				}
+				else
+					Log.e("MRF","groupId="+groupId+", groupCount="+adapter.getGroupCount());
 			}
+			else
+				Log.e("MRF","No adapter");
 		}
+		else
+			Log.e("MRF","No R.id.recordings_list");
+
 		return null;
 	}
 	private SeekBar.OnSeekBarChangeListener mOnSeekBarChangeListener = new SeekBar.OnSeekBarChangeListener() {
@@ -332,7 +365,7 @@ public class ManageRecordingsFrame extends Fragment {
 				}
 			}
 			ExpandableListView recordingGroupsList = (ExpandableListView) mFragmentRootView.findViewById(R.id.recordings_list);
-			recordingGroupsList.setAdapter(mRecordsListAdapter = new RecordsListAdapter(getContext(), mRecordingsGroups));
+			recordingGroupsList.setAdapter(new RecordsListAdapter(getContext(), mRecordingsGroups));
 			recordingGroupsList.setOnItemLongClickListener(new ExpandableListView.OnItemLongClickListener() {
 				@Override
 				public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {

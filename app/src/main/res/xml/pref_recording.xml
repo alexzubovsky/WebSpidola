@@ -16,7 +16,7 @@
         android:maxLines="1"
         android:selectAllOnFocus="true"
         android:singleLine="true"
-        android:title="Subdirectory to use as aroot for the recordings"/>
+        android:title="Subdirectory to use as a root for the recordings"/>
     <!--SwitchPreference
         android:defaultValue="true"
         android:key="notifications_new_message"

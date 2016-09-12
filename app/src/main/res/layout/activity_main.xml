@@ -33,7 +33,7 @@
             app:layout_scrollFlags="scroll|enterAlways"
             app:popupTheme="@style/AppTheme.PopupOverlay"
             android:visibility="gone"
-            android:layout_marginLeft="56dp"/><!-- ?attr/actionBarSize
+            android:layout_marginLeft="@dimen/design_fab_size_normal"/><!-- ?attr/actionBarSize
             app:layout_scrollFlags="scroll|enterAlways" -->
         <android.support.v7.widget.Toolbar
             android:id="@+id/main_tabbed_toolbar_bottom"

@@ -208,6 +208,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 			// guidelines.
 			//bindPreferenceSummaryToValue(findPreference("notifications_new_message_ringtone"));
 			bindPreferenceSummaryToValue(findPreference(getString(R.string.max_file_size)));
+			bindPreferenceSummaryToValue(findPreference(getString(R.string.root_directory_for_recordings)));
 		}
 
 		@Override

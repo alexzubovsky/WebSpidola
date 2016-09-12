@@ -180,6 +180,27 @@ public class MainTabbedActivity extends AppCompatActivity /*implements View.OnTo
 	 * }
 	 * }
 	 */
+	private static int mCurrentTheme = 0;
+	public final static int THEME_DARK = 0;
+	public final static int THEME_MEDIUM = 1;
+	public final static int THEME_LIGHT = 2;
+	/** Set the theme of the activity, according to the configuration. */
+	public static void onActivityCreateSetTheme(Activity activity)
+	{
+		switch (mCurrentTheme)
+		{
+			case THEME_MEDIUM:
+				activity.setTheme(R.style.MediumTheme);
+				break;
+			case THEME_LIGHT:
+				activity.setTheme(R.style.LightTheme);
+				break;
+			case THEME_DARK:
+			default:
+				activity.setTheme(R.style.DarkTheme);
+				break;
+		}
+	}
 	private static FloatingActionButton floatingActionButton;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -198,8 +219,29 @@ public class MainTabbedActivity extends AppCompatActivity /*implements View.OnTo
 		}
 		RECORDS_SORT_ASCENDING = mContext.getString(R.string.records_sort_ascending);
 		RECORDS_SHORTING_NAMES = getString(R.string.records_shorting_names);
-		reReadSettings(true);
-		onActivityCreateSetTheme(mThisActivity = this);
+		reReadSettings();
+		if(mCurrentTheme != MediaPlayerService.mTheme) {
+			mCurrentTheme = MediaPlayerService.mTheme;//Set the theme of the Activity
+			onActivityCreateSetTheme(this);/*
+			this.startActivity(new Intent(this, this.getClass()));//restart it by creating a new Activity of the same type.
+			this.finish();
+			return;*/
+		}
+		mThisActivity = this;
+		switch (mCurrentTheme)
+		{
+			case THEME_MEDIUM:
+				this.setTheme(R.style.MediumTheme);
+				break;
+			case THEME_LIGHT:
+				this.setTheme(R.style.LightTheme);
+				break;
+			case THEME_DARK:
+			default:
+				this.setTheme(R.style.DarkTheme);
+				break;
+		}
+
 		checkPermissionsOnInitialization();
 		this.setContentView(R.layout.activity_main);
 
@@ -254,6 +296,8 @@ public class MainTabbedActivity extends AppCompatActivity /*implements View.OnTo
 		});
 		//floatingActionButton.setOnLongClickListener(fabMovingSupport);
 		floatingActionButton.setOnTouchListener(onTouchListener);
+		if(MediaPlayerService.topPositionOfPlayPause && floatingActionButton.getSize() ==  FloatingActionButton.SIZE_MINI)
+			toolbar.setTitleMarginStart(40);
 		mSavedStationDefinition = getSavedStationDefinition(savedInstanceState);
 		//registerBroadcastReceiver("onCreate:"+(savedInstanceState!=null?savedInstanceState.getClass().getSimpleName():""));
 		setUpAdMob();
@@ -273,14 +317,18 @@ public class MainTabbedActivity extends AppCompatActivity /*implements View.OnTo
 			adMobCorrection = AdSize.BANNER.getHeight();
 			coeff = 1.5f;
 		}
-		TypedValue tv = new TypedValue();
-		if (getTheme().resolveAttribute(android.R.attr.actionBarSize, tv, true)){
-			int actionBarHeight = TypedValue.complexToDimensionPixelSize(tv.data,getResources().getDisplayMetrics());
+		int actionBarHeight = getThemeTypedValue(android.R.attr.actionBarSize);//TypedValue tv = new TypedValue();if (getTheme().resolveAttribute(android.R.attr.actionBarSize, tv, true)){TypedValue.complexToDimensionPixelSize(tv.data,getResources().getDisplayMetrics());
+		if(actionBarHeight >= 0){
 			TabLayout tabLayout = (TabLayout) findViewById(R.id.mainTabsBar);
-			//if(tabLayout.getVisibility()==View.VISIBLE)
-			//	actionBarHeight+=tabLayout.getHeight();
 			mViewPager.setPadding(mViewPager.getPaddingLeft(),mViewPager.getPaddingTop(),mViewPager.getPaddingRight(),Math.round(coeff*actionBarHeight) + adMobCorrection);
 		}
+	}
+	private int getThemeTypedValue(int id){
+		int typedIntValue = -1;
+		TypedValue typedValue = new TypedValue();
+		if (getTheme().resolveAttribute(id, typedValue, true))
+			typedIntValue = TypedValue.complexToDimensionPixelSize(typedValue.data,getResources().getDisplayMetrics());
+		return typedIntValue;
 	}
 	/*
 	private void setupTabItem(TabItem v){
@@ -782,6 +830,16 @@ public class MainTabbedActivity extends AppCompatActivity /*implements View.OnTo
 			}
 		};
 	};
+	private static String getStringPreference(String preferenceName, String value) {
+		boolean exists = mPreferences.contains(preferenceName);
+		String savedValue = mPreferences.getString(preferenceName, value);
+		if(!exists) {
+			SharedPreferences.Editor ed = mPreferences.edit();
+			ed.putString(preferenceName, String.valueOf(savedValue));
+			ed.apply();
+		}
+		return savedValue;
+	}
 	private static int getIntegerPreference(String preferenceName, int value) {
 		boolean exists = mPreferences.contains(preferenceName);
 		int savedValue = Integer.parseInt(mPreferences.getString(preferenceName, String.valueOf(value)));
@@ -889,17 +947,10 @@ public class MainTabbedActivity extends AppCompatActivity /*implements View.OnTo
 		MediaPlayerService.mMonitorHeadphones = getBooleanPreference(HEADPHONE_MONITOR, true);
 		MediaPlayerService.mMonitorAudioLevelOnHeadphones = getBooleanPreference(AUDIOLEVEL_MONITOR, true);
 		MediaPlayerService.mMaxRecordingSize = getIntegerPreference(MAX_FILE_SIZE,8)*(1024*1024);
-		MediaPlayerService.mTheme = Integer.parseInt(mPreferences.getString(THEME, "0"));
-		MediaPlayerService.mRootDirectoryForRecordings = mPreferences.getString(ROOT_DIRECTORY_FOR_RECORDINGS, MediaPlayerService.mRootDirectoryForRecordings);
+		MediaPlayerService.mTheme = getIntegerPreference(THEME, 0);
+		MediaPlayerService.mRootDirectoryForRecordings = getStringPreference(ROOT_DIRECTORY_FOR_RECORDINGS, "recordings");
 		MediaPlayerService.mRecordsSortAscending = getBooleanPreference(RECORDS_SORT_ASCENDING, false);
 		MediaPlayerService.topPositionOfPlayPause = getIntegerPreference(TOP_POSITION_PAUSE_BUTTON, 1) == 0;
-		if(!ignoreForFirstRun)
-			setCurrentTheme(MediaPlayerService.mTheme);
-	}
-
-
-	private static void setCurrentTheme(int themeId) {
-		changeToTheme(mThisActivity,themeId);
 	}
 
 	//permissions
@@ -1028,37 +1079,6 @@ public class MainTabbedActivity extends AppCompatActivity /*implements View.OnTo
 	}
 	//public class Utils
 	//{
-	private static int mCurrentTheme = 0;
-	public final static int THEME_DARK = 0;
-	public final static int THEME_MEDIUM = 1;
-	public final static int THEME_LIGHT = 2;
-	/**
-	 * Set the theme of the Activity, and restart it by creating a new Activity of the same type.
-	 */
-	public static void changeToTheme(Activity activity, int theme)
-	{
-		if(mCurrentTheme != theme) {
-			mCurrentTheme = theme;
-			activity.finish();
-			activity.startActivity(new Intent(activity, activity.getClass()));
-		}
-	}
-	/** Set the theme of the activity, according to the configuration. */
-	public static void onActivityCreateSetTheme(Activity activity)
-	{
-		switch (mCurrentTheme)
-		{
-			default:THEME_DARK:
-				activity.setTheme(R.style.DarkTheme);
-				break;
-			case THEME_MEDIUM:
-				activity.setTheme(R.style.MediumTheme);
-				break;
-			case THEME_LIGHT:
-				activity.setTheme(R.style.LightTheme);
-				break;
-		}
-	}
 	//}
 	public static int generateUniqueId(){
 		int id;

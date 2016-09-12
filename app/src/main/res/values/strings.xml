@@ -225,9 +225,8 @@ res=(s1.join(delim1) + delim2 + s2.join(delim1))
     <string name="manage_station_text">Would you like to not add station with the label\n\'%s\'</string>
     <string name="duplicate_station_text">Chosen station already is in the list with the label\n\'%s\'</string>
     <string name="selected_station_def">SelectedStation</string>
+    <string name="TOP_POSITION_PAUSE_BUTTON">TOP_POSITION_PAUSE_BUTTON</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="root_directory_for_recordings">ROOT_DIRECTORY_FOR_RECORDINGS</string>
     <string name="records_sort_ascending">RECORDS_SORT_ASCENDING</string>
     <string name="sort_ascending">Sort Ascending</string>
@@ -253,32 +252,31 @@ res=(s1.join(delim1) + delim2 + s2.join(delim1))
     <string name="banner_ad_unit_id">ca-app-pub-5265061023469633/9916779909</string>!-- real -->
 
     <string name="help_favorites_text">
-       Click Pause button (on very bottom) for temporary stopping. It will change to Play button to resume playing.\n
-        Touching another station name will start playing it.\nSliding page to left or right will change tab in the same way as selecting tab label.\n
-        Touching 3 vertical dots will open settings menu.</string>
+        Tap a station name to start playing.\nTap the pause button to interrupt audio.\nSwipe left or right to change tabs.\n
+        Tap three vertical dots to open settings menu.</string>
     <string name="help_favorites_text_2">
-        Long touching station name will show Record button. Touching Record will start it and replace button by Pause and Stop buttons.</string>
+        Long press a station name to show the Record button.</string>
     <string name="help_settings_3_text">
-        Length of the recorded file. One megabyte is about 1 minute for 128 kBit per second bitrate.</string>
+        Size of the recorded file. 1 MB is about 1 minute of 128 kbps bitrate audio.</string>
     <string name="help_settings_2_text">
         Themes and font sizes</string>
     <string name="help_settings_1_text">
-        Various settings to monitor starting, connecting/disconnecting headphones etc.</string>
+        Start behavior, headphone connection monitoring.</string>
     <string name="help_settings_text">
-        Settings menu allows to change preferences for the monitoring of the changing device\'s condition, look and feel and recording settings.</string>
-    <string name="help_manage_text">Un-checking station name will delete station from Favorites. When un-checking and re-positioning finished, touch Save button (floppy disk image).\n
-        If Play/Pause or save button obscure repositioning controls then touch the button and slide finger to the other place on screen, then put finger away. Button well change its place</string>
+        Settings menu allows changing preferences for monitoring the device\'s condition, look and feel of the app, and recording preferences.</string>
+    <string name="help_manage_text">
+        Deselecting a station name will remove it from Favorites. Tap the Save button when you are done sorting.\n
+        If any button obscures repositioning controls then touch the button and slide finger towards center of the scree, then put finger away. Button will change its place</string>
     <string name="help_search_text">
-        Use search string if you know full or partial name of the station.\nOtherwise use predefined categories to search by language, genre or country.\n
-        Unfortunately not all stations available elsewhere could be found.\n
-        Touching station name (if search or category selection produce result) will start playing and add station to the Favorites.\n
-        If adding to Favorites is not desirable (wrong station or no playing started), then long touch will open dialog to exclude adding to Favorites.\n
-        Another touch of the station that is already in the list will open dialog asking if you want to have duplicates in the Favorites.</string>
+        Search by full or partial name of a station that you want to find.\nUse predefined categories to search by language, genre, or country.\n
+        Not all stations available elsewhere are available in this app.\n
+        Tap a discovered station name to start playing. That will also add it to Favorites.\n
+        If just tapped station is not you\'re looking for, then long press it will open dialog to remove from Favorites. The same happens when you long press left to the station name on Favorites tab.\n
+        Tapping a station that is already in your Favorites will ask you if you want duplicate entries.\n</string>
     <string name="help_recordings_text">
-        Recordings categorized by their station name. Touching station name will open list of saved recordings.\n
-        Touching recording name starts batch playing. That is indicated by the sliders. Top one allows to go back and forth by the batch list. Bottom slider allows to change position of the playing.\n
-        Long touch of the recording name opens Delete dialog for that recording. Long touch of station\'s title will open dialog to delete all recordings for it.</string>
+        Recordings groupped by station name. Touch a station name to open the list of saved recordings.\n
+        Touch a recording to begin playback of it and all next recording of the same group. While playing undernith the recording shown Progress Indicators. Use the arrows at the top progress indicator to quickly seek through the recording. Use the bottom slider to seek through the current recording.\n
+        Long press a recording to show its Delete dialog. Long press a station name to show the Delete dialog for whole group.</string>
     <string name="help_favorites_text_3">
-        Another way to delete station from Favorites is to long touch between left edge and center of radio button image</string>
-    <string name="TOP_POSITION_PAUSE_BUTTON">TOP_POSITION_PAUSE_BUTTON</string>
+        Long press the left half of a station\'s radio button to quickly remove it from Favorites.</string>
 </resources>

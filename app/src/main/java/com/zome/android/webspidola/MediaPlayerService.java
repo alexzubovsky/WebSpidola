@@ -657,7 +657,7 @@ public class MediaPlayerService extends Service implements AudioManager.OnAudioF
 	/*public static void startPlay(String url, String stationName){
 		startPlay(new PlayingInfo((new StringBuffer(String.valueOf(Util.TYPE_OTHER)).append(' ').append(url).append(' ').append(stationName)).toString()));
 	}*/
-	public static void startPlay(PlayingInfo stationDef){
+	public static void startPlay(PlayingInfo stationDef) {
 		try{
 			if(mediaPlayer != null) {
 				if (isMediaPlayerReadyToContinue()) {
@@ -736,13 +736,13 @@ public class MediaPlayerService extends Service implements AudioManager.OnAudioF
 		//else mediaPlayerRegisteredState = IS_NULL;
 		return paused;
 	}
-	public static void stopPlay() {
-		stopPlay(false);
-	}
+	public static void stopPlay() {stopPlay(false);}
 	public static void stopPlay(boolean noNotif) {
 		if (mediaPlayer != null) {
 			currentlyPlayingInfo = null;//selectedStationName = null;//mediaPlayerRegisteredState = state;
-			mediaPlayer.getPlayerControl().pause();
+			if(!mediaPlayer.getPlayerControl().isPlaying())
+				mediaPlayer.getPlayerControl().pause();
+
 			releasePlayer();
 			if(!noNotif)
 				engageNotificationBarAsStopped();
@@ -1070,10 +1070,11 @@ public class MediaPlayerService extends Service implements AudioManager.OnAudioF
 					mOverallPosition += (mBatchPlayingDefinition.get(mBatchPlayingDefinitionIndex)).length*(delta>0? 1:-1);
 				if ((mBatchPlayingDefinitionIndex +=delta) >=0  && mBatchPlayingDefinition.size() > mBatchPlayingDefinitionIndex) {
 					info = mBatchPlayingDefinition.get(mBatchPlayingDefinitionIndex);
-					Log.e("MPS","getNextPlayingInfo: selected to play "+mBatchPlayingDefinitionIndex+" batch item out of "+mBatchPlayingDefinition.size());
+					Log.i("MPS","getNextPlayingInfo: selected to play "+mBatchPlayingDefinitionIndex+" batch item out of "+mBatchPlayingDefinition.size());
+					//(new Exception("getNextPlayingInfo: selected to play "+mBatchPlayingDefinitionIndex+" batch item out of "+mBatchPlayingDefinition.size())).printStackTrace();
 				}
 				else
-					Log.e("MPS","getNextPlayingInfo: played last batch item out of "+mBatchPlayingDefinition.size());
+					Log.i("MPS","getNextPlayingInfo: played last batch item out of "+mBatchPlayingDefinition.size());
 			}
 			if(info != null && jump){
 				startPlay(info);
@@ -1091,11 +1092,15 @@ public class MediaPlayerService extends Service implements AudioManager.OnAudioF
 
 		public int getCurrentPercentageInPlay() {
 			int position = -1;
-			if(mediaPlayer!=null && mediaPlayer.isPlaying() && currentlyPlayingInfo.length > 0) {
+			if(mediaPlayer!=null ) {
 				com.google.android.exoplayer.util.PlayerControl control = mediaPlayer.getPlayerControl();
-				position = Math.round(100.0f * control.getCurrentPosition() / control.getDuration());
-				//position = Math.round(100.0f * mediaPlayer.getCurrentPosition() / currentlyPlayingInfo.length);
+				if ((mediaPlayer.isPlaying() || control.isPlaying()) && currentlyPlayingInfo.length > 0)
+					position = Math.round(100.0f * control.getCurrentPosition() / control.getDuration());
+				else
+					Log.e("MPS","isPlaying="+ mediaPlayer.isPlaying()+", PlayingInfo.length=" + currentlyPlayingInfo.length);
 			}
+			else
+				Log.e("MPS","No MediaPlayer");
 			return position;
 		}
 
@@ -1137,6 +1142,13 @@ public class MediaPlayerService extends Service implements AudioManager.OnAudioF
 				info = mBatchPlayingDefinition.get(mBatchPlayingDefinitionIndex);
 			return info;
 		}
+
+		public boolean isFirst() {
+			return (mBatchPlayingDefinitionIndex == 0);
+		}
+		public boolean isLast() {
+			return (mBatchPlayingDefinitionIndex == mBatchPlayingDefinition.size()-1);
+		}
 	}
 	public static String formatTimeString(long millis) {
 		StringBuffer buf = new StringBuffer();
@@ -1154,7 +1166,7 @@ public class MediaPlayerService extends Service implements AudioManager.OnAudioF
 		BatchPlayingStat batchPlayingStat = BatchPlayingStat.getInstance(batchDefinitions);
 		PlayingInfo definition = batchPlayingStat.getNextPlayingInfo();
 		if(definition != null)
-			startPlay(definition);
+			startPlay(definition);//Pause causes change in state, thus stop detected second time
 	}
 
 	private static ExoMediaPlayer.Listener mediaPlayerListener = new ExoMediaPlayer.Listener() {

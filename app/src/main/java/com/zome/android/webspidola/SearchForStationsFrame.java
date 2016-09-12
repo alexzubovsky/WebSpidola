@@ -760,8 +760,14 @@ public class SearchForStationsFrame extends android.support.v4.app.Fragment{//Ap
 			public void onClick(DialogInterface dialog, int whichButton) {
 				switch(type) {
 					case 3:
-					case 2: mHashMapOfAnchors.remove(url);
+					case 2:
+						mExistedStations.remove(url);
 						mHashMapOfAnchors.remove(url);
+						for(int i=mAddedStations.size() -1;i>=0;i--)
+							if(mAddedStations.get(i)[MediaPlayerService.DEF_POS_URL].equals(url)) {
+								mAddedStations.remove(i);
+								break;
+							}
 						break;
 				}
 			}
